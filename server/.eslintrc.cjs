@@ -12,5 +12,17 @@ module.exports = {
   },
   root: true,
   ignorePatterns: ['.eslintrc.cjs', 'dist'],
+  rules: {
+    // disable rule for async functions in express:
+    // allows passing () => Promise<void> to () => void
+    '@typescript-eslint/no-misused-promises': [
+      'error',
+      {
+        checksVoidReturn: {
+          arguments: false,
+        },
+      },
+    ],
+  },
 };
 
