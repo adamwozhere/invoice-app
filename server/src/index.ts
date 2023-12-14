@@ -1,19 +1,10 @@
-import express from 'express';
+import app from './app';
+import config from './utils/config';
+import logger from './utils/logger';
 
-const app = express();
-
-app.use(express.json());
-
-const PORT = 3000;
-
-app.get('/ping', (_, res) => {
-  console.log('someone pinged here');
-  res.send('pong');
-});
-
-app.use(express.static('../client/dist'));
+const PORT = config.PORT;
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  logger.info(`Server running on http://localhost:${PORT}`);
 });
 

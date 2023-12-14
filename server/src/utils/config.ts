@@ -1,18 +1,13 @@
 import dotenv from 'dotenv';
+import logger from './logger';
 dotenv.config();
 
-if (process.env.MONGODB_URI === undefined) {
-  throw Error('Environment var not defined: MONGODB_URI');
-}
+const MONGODB_URI = process.env.MONGODB_URI;
 
-if (process.env.TEST_MONGODB_URI === undefined) {
-  throw Error('Environment var not defined: TEST_MONGODB_URI');
+if (MONGODB_URI === undefined) {
+  logger.error('Environment var not defined: MONGODB_URI');
+  process.exit(1);
 }
-
-const MONGODB_URI =
-  process.env.NODE_ENV === 'test'
-    ? process.env.TEST_MONGODB_URI
-    : process.env.MONGODB_URI;
 
 const PORT = process.env.PORT || 3000;
 

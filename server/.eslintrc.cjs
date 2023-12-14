@@ -23,6 +23,8 @@ module.exports = {
         },
       },
     ],
+    // allows ingoring rule for express nextFunction
+    '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
   },
 };
 
