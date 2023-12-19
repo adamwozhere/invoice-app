@@ -11,11 +11,13 @@ const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
   //   return _next(err);
   // }
 
+  // TODO: handle missing / undefined values (zod errorMap ?)
   if (err instanceof z.ZodError) {
     logger.error(`Validation error.\n${err.toString()}`);
 
     return res.status(400).json({
-      error: err.flatten(),
+      error: err,
+      // error: err.flatten(),
     });
   } else if (err instanceof Error) {
     // not sure how this line works
