@@ -33,6 +33,13 @@ export const deleteCustomerById = async (id: string) => {
   return deleted;
 };
 
+export const editCustomerById = async (id: string, data: object) => {
+  const edited = await Customer.findOneAndReplace({ _id: id }, data, {
+    returnDocument: 'after',
+  });
+  return edited;
+};
+
 // createCustomer({
 //   name: 'bob',
 //   email: 'bob@hotmail.com',

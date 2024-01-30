@@ -18,6 +18,7 @@ export interface CustomerDocument {
   id: string; // mongoose virtual: string version of ObjectId
 }
 
+// TODO: do I need this or is it just the one from zod I need?
 export type CustomerInput = Omit<CustomerDocument, 'id'>;
 
 const addressSchema = new Schema(

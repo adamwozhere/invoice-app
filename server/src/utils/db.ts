@@ -2,11 +2,19 @@ import mongoose from 'mongoose';
 import config from './config';
 import logger from './logger';
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import Counters from '../models/counters.model';
 
 const connect = async () => {
   if (process.env.NODE_ENV !== 'test') {
     try {
       await mongoose.connect(config.MONGODB_URI);
+
+      // TODO: remove this as it will eventually be held in a User document
+      // needs to do this only once
+      if ((await Counters.countDocuments({})) === 0) {
+        await Counters.create({ name: 'counter' });
+      }
+
       logger.info(`Database connected: ${config.MONGODB_URI}`);
     } catch (err: unknown) {
       logger.error(`Could not connect to database`);
@@ -35,8 +43,24 @@ const testServer = {
     mongoServer = await MongoMemoryServer.create();
     const uri = mongoServer.getUri();
     await mongoose.connect(uri);
+
+    // TODO: not working in test in single thread mode - maybe need to have the function be called from the model on invoice creation?
+    await Counters.deleteMany({});
+    await Counters.create({ name: 'counter' });
     logger.info(`Connected to Mongo memory server: ${uri}`);
   },
+
+  reset: async () => {
+    if (process.env.NODE_ENV !== 'test') {
+      throw Error('Mongo memory server should be used in api testing only');
+    }
+    const collections = Object.values(mongoose.connection.collections);
+    for (const collection of collections) {
+      await collection.drop();
+    }
+    await Counters.create({ name: 'counter' });
+  },
+
   stop: async () => {
     if (process.env.NODE_ENV !== 'test') {
       throw Error('Mongo memory server should be used in api testing only');
@@ -44,9 +68,11 @@ const testServer = {
     // stop mongo memeory server
     if (mongoServer) {
       await mongoServer.stop();
-      await mongoose.connection.close();
+      // await mongoose.connection.close();
+      // await mongoose.connection.destroy(); // close but prevents reconnecting to the connection
+      await mongoose.disconnect(); // runs close on all connections in parallel
       logger.info('Mongo memory server disconnected');
-      // or should it be mongoose.disconnect() ?
+      // or should it be mongoose.disconnect() ? (disconnect closes all connections in parallel - so this may not be a good idea for testing ?)
     }
   },
 };

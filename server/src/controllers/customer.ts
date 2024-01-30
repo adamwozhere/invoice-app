@@ -3,11 +3,17 @@ import { Request, Response } from 'express';
 import {
   createCustomer,
   deleteCustomerById,
+  editCustomerById,
   getAllCustomers,
   getCustomerById,
 } from '../services/customerService';
 
-import { CustomerInput } from '../schemas/customer.schema';
+import {
+  CreateCustomerInput,
+  DeleteCustomerInput,
+  EditCustomerInput,
+  GetCustomerByIdInput,
+} from '../schemas/customer.schema';
 
 // import logger from '../utils/logger';
 
@@ -19,15 +25,15 @@ import { CustomerInput } from '../schemas/customer.schema';
 
 export const getAllCustomersHandler = async (req: Request, res: Response) => {
   const customers = await getAllCustomers();
-  if (customers.length === 0) {
-    return res.status(404).json({ error: 'No customers found' });
-  }
+  // if (customers.length === 0) {
+  //   return res.status(404).json({ error: 'No customers found' });
+  // }
 
   return res.json(customers);
 };
 
 export const getCustomerHandler = async (
-  req: Request<{ id: string }, object, object>,
+  req: Request<GetCustomerByIdInput['params'], object, object>,
   res: Response
 ) => {
   const customer = await getCustomerById(req.params.id);
@@ -40,7 +46,7 @@ export const getCustomerHandler = async (
 };
 
 export const postCustomerHandler = async (
-  req: Request<object, object, CustomerInput['body']>,
+  req: Request<object, object, CreateCustomerInput['body']>,
   res: Response
 ) => {
   const customer = await createCustomer(req.body);
@@ -48,7 +54,7 @@ export const postCustomerHandler = async (
 };
 
 export const deleteCustomerHandler = async (
-  req: Request<{ id: string }, object, object>,
+  req: Request<DeleteCustomerInput['params'], object, object>,
   res: Response
 ) => {
   const deleted = await deleteCustomerById(req.params.id);
@@ -57,5 +63,18 @@ export const deleteCustomerHandler = async (
   }
 
   return res.status(204).json(deleted);
+};
+
+export const putCustomerByIdHandler = async (
+  req: Request<EditCustomerInput['params'], object, EditCustomerInput['body']>,
+  res: Response
+) => {
+  const edited = await editCustomerById(req.params.id, req.body);
+
+  if (!edited) {
+    return res.status(404).end();
+  }
+
+  return res.json(edited);
 };
 

@@ -26,6 +26,9 @@ const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     return res.status(error.statusCode ?? 400).json({ message: err.message });
   }
 
+  // check for error names here
+  // e.g. CastError, ValidationError, JsonWebTokenError, TokenExpiredError
+
   return res.status(500).json({ message: 'Internal server error' });
 };
 
