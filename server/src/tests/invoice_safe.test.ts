@@ -19,7 +19,6 @@ import Customer from '../models/customer.model';
 import Invoice, { InvoiceDocument } from '../models/invoice.model';
 import { omit } from 'lodash';
 import dayjs from 'dayjs';
-import { Document } from 'mongoose';
 
 const api = supertest(app);
 

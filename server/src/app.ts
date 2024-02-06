@@ -49,9 +49,9 @@ app.use('/api/users', userRouter);
 // TODO: do I want to barrel export/import middleware
 // e.g. app.use( middleware.unknownEndpoint )
 // unknown endpoint
-// NOTE: set to 500 for testing purposes
+// NOTE: can set to 500 etc. for testing purposes
 app.use((_, res) => {
-  res.status(500).send({ error: 'Unknown endpoint' });
+  res.status(404).send({ error: 'Unknown endpoint' });
 });
 
 app.use(errorHandler);

@@ -10,7 +10,7 @@ export const authUser = async (
   next: NextFunction
 ) => {
   const authHeader = req.get('authorization');
-  if (!authHeader) {
+  if (!authHeader?.startsWith('Bearer ')) {
     return res.sendStatus(401);
   }
 

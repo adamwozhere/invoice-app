@@ -1,7 +1,3 @@
-import Customer, {
-  CustomerDocument,
-  CustomerInput,
-} from '../models/customer.model';
 import Invoice from '../models/invoice.model';
 // import logger from './logger';
 

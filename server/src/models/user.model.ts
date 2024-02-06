@@ -17,7 +17,7 @@ export interface UserDocument extends Document {
   invoices: Array<InvoiceDocument>;
   totalInvoices: number;
   latestInvoiceNumber: number;
-  refreshToken: string;
+  refreshToken: Array<string>;
 }
 
 // TODO: this is also in customer so should probably have this in a separate file?
@@ -72,7 +72,7 @@ const userSchema = new Schema<UserDocument>(
     ],
     totalInvoices: Number,
     latestInvoiceNumber: Number,
-    refreshToken: String,
+    refreshToken: [String],
     //id: String, // NOTE: tried to solve auth controller not recognising id as string: inferred type doesn't seem to work, have called User.findOne<UserDocument>({}) to get it to use type correctly
   },
   {
@@ -82,6 +82,7 @@ const userSchema = new Schema<UserDocument>(
         delete returned._id;
         delete returned.__v;
         delete returned.passwordHash;
+        // delete returned.refreshToken;
       },
     },
   }
