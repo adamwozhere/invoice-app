@@ -12,7 +12,6 @@ import db from './utils/db';
 import invoiceRouter from './routes/invoice.route';
 import customerRouter from './routes/customer.route';
 import userRouter from './routes/user.route';
-// import loginRouter from './routes/login.route';
 import authRouter from './routes/auth.route';
 
 import requestLogger from './middleware/requestLogger';
@@ -24,27 +23,25 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(requestLogger);
 
-// TODO: cors ?
 // TODO: do I need this anymore?
 // mongoose.set('strictQuery', false);
 
 void db.connect();
 
-// healthcheck
-app.get('/ping', (_, res) => {
-  logger.info('someone pinged here');
-  res.send('pong');
-});
-
 // static frontend
 app.use(express.static(config.FRONTEND_PATH));
 
+// healthcheck
+app.get('/api/status', (_, res) => {
+  logger.info('service status pinged');
+  res.sendStatus(200);
+});
+
 // routes
 app.use('/auth', authRouter);
+app.use('/api/users', userRouter);
 app.use('/api/invoices', invoiceRouter);
 app.use('/api/customers', customerRouter);
-app.use('/api/users', userRouter);
-// app.use('/api/login', loginRouter);
 
 // TODO: do I want to barrel export/import middleware
 // e.g. app.use( middleware.unknownEndpoint )

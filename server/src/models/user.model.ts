@@ -1,6 +1,21 @@
 import mongoose, { Document, Schema, Types } from 'mongoose';
 import { InvoiceDocument } from './invoice.model';
+import { CustomerDocument } from './customer.model';
 
+// TODO: work out typescript / mongoose interaction properly - from reading docs:
+
+// IUser is a document interface, it represents the raw object structure that IUser objects look like in MongoDB.
+// User() constructor returns an instance of HydratedDocument<IUser>
+// HydratedDocument<IUser> represents a hydrated Mongoose document,
+// with methods, virtuals, and other Mongoose-specific features.
+
+// ObjectId's: use Types.ObjectId in Document Interfaces,
+// and ObjectId or Schema.Types.ObjectId for Schemas
+
+/**
+ * extend Document interface so Typescript knows that UserDocument.populate() exists,
+ * -- used in functions after authUser middleware adds UserDocument to request
+ */
 export interface UserDocument extends Document {
   name: string;
   email: string;
@@ -13,11 +28,15 @@ export interface UserDocument extends Document {
     postcode: string;
   };
   // bank details?
-  id: string; // mongoose virtual: string version of ObjectId
+  // invoices: Types.DocumentArray<PopulatedDoc<InvoiceDocument>>;
+  // customers: Types.DocumentArray<PopulatedDoc<CustomerDocument>>;
   invoices: Array<InvoiceDocument>;
-  totalInvoices: number;
+  customers: Array<CustomerDocument>;
+  // totalInvoices: number;
   latestInvoiceNumber: number;
   refreshToken: Array<string>;
+  id: string; // mongoose virtual: string version of ObjectId
+  _id: Types.ObjectId; // ObjectId used for attaching user ID to req.user for auth middleware
 }
 
 // TODO: this is also in customer so should probably have this in a separate file?
@@ -49,9 +68,6 @@ const addressSchema = new Schema(
   }
 );
 
-// TODO: do I need this or is it just the one from zod I need?
-export type UserInput = Pick<UserDocument, 'name' & 'email' & 'address'>;
-
 // TODO: where do I put the password / confirm password, or is that only in the zod schema (as that is input not returned mongoose document)
 
 const userSchema = new Schema<UserDocument>(
@@ -66,14 +82,19 @@ const userSchema = new Schema<UserDocument>(
     address: addressSchema,
     invoices: [
       {
-        type: Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'Invoice',
       },
     ],
-    totalInvoices: Number,
-    latestInvoiceNumber: Number,
+    customers: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Customer',
+      },
+    ],
+    // totalInvoices: Number,
+    latestInvoiceNumber: { type: Number, default: 0 },
     refreshToken: [String],
-    //id: String, // NOTE: tried to solve auth controller not recognising id as string: inferred type doesn't seem to work, have called User.findOne<UserDocument>({}) to get it to use type correctly
   },
   {
     toJSON: {

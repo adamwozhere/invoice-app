@@ -15,11 +15,20 @@ export const customerBody = {
 
 export const customerParams = {
   params: z.object({
-    id: objectIdSchema,
+    customerId: objectIdSchema,
+  }),
+};
+
+export const userParams = {
+  params: z.object({
+    userId: objectIdSchema,
   }),
 };
 
 // export type CustomerInput = z.infer<typeof customerSchema>;
+export const getCustomersSchema = z.object({
+  ...customerParams,
+});
 
 export const createCustomerSchema = z.object({
   ...customerBody,
@@ -29,7 +38,7 @@ export const deleteCustomerSchema = z.object({
   ...customerParams,
 });
 
-export const getCustomerByIdSchema = z.object({
+export const getSingleCustomerSchema = z.object({
   ...customerParams,
 });
 
@@ -38,8 +47,9 @@ export const editCustomerSchema = z.object({
   ...customerParams,
 });
 
+export type GetCustomersInput = z.infer<typeof getCustomersSchema>;
 export type CreateCustomerInput = z.infer<typeof createCustomerSchema>;
 export type DeleteCustomerInput = z.infer<typeof deleteCustomerSchema>;
-export type GetCustomerByIdInput = z.infer<typeof getCustomerByIdSchema>;
+export type GetSingleCustomerInput = z.infer<typeof getSingleCustomerSchema>;
 export type EditCustomerInput = z.infer<typeof editCustomerSchema>;
 

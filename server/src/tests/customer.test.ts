@@ -1,640 +1,420 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-
-import {
-  test,
-  describe,
-  beforeAll,
-  beforeEach,
-  afterAll,
-  expect,
-} from 'vitest';
 import supertest from 'supertest';
-
+import { beforeAll, afterAll, describe, it, expect } from 'vitest';
+import bcrypt from 'bcrypt';
+import User from '../models/user.model';
 import db from '../utils/db';
 import app from '../app';
 import Customer from '../models/customer.model';
+import jwt from 'jsonwebtoken';
 import { omit } from 'lodash';
 
 const api = supertest(app);
 
-/**
- * SETUP TESTS
- */
-const customerInput = [
-  {
-    name: 'Sherlock Holmes',
-    email: 'sherlock@baker-st.com',
-    address: {
-      line1: '221B Baker St',
-      line2: 'Marylebone',
-      city: 'London',
-      postcode: 'NW1 6XE',
-    },
-    id: '',
-  },
-  {
-    name: 'John Watson',
-    email: 'john@baker-st.com',
-    address: {
-      line1: '221B Baker St',
-      line2: 'Marylebone',
-      city: 'London',
-      postcode: 'NW1 6XE',
-    },
-    id: '',
-  },
-];
-
 beforeAll(async () => {
   await db.testServer.start();
+
+  // create test user
+  const pwd = await bcrypt.hash('Password123', 10);
+  const user = await User.create({
+    name: 'Sherlock Holmes',
+    email: 'sherlock@baker-st.com',
+    passwordHash: pwd,
+    address: {
+      line1: '22B Baker St',
+      line2: 'Marylebone',
+      city: 'London',
+      postcode: 'NW1 6XE',
+    },
+  });
+
+  const cust1 = await Customer.create({
+    name: 'Chris Jenkins',
+    email: 'chris@jenkins.com',
+    address: {
+      line1: '123 Bath St',
+      city: 'Portsmouth',
+      postcode: 'PM1 7AR',
+    },
+    user: user._id,
+  });
+
+  const cust2 = await Customer.create({
+    name: 'George Holloway',
+    email: 'george@holloway.com',
+    address: {
+      line1: '36A',
+      line2: 'Hannover St.',
+      city: 'Romsey',
+      county: 'Hampshire',
+      postcode: 'HM3 9RS',
+    },
+    user: user._id,
+  });
+
+  const cust3 = await Customer.create({
+    name: 'Laura Brand',
+    email: 'laura@brand.com',
+    address: {
+      line1: '14 Trafalgar Arch',
+      line2: 'Churchill Avenue',
+      city: 'Manchester',
+      postcode: 'MN5 3XB',
+    },
+    user: user._id,
+  });
+
+  // add extra user and customer - customer should not be accessible for test user
+
+  const pwd2 = await bcrypt.hash('Password123', 10);
+  const user2 = await User.create({
+    name: 'User 2',
+    email: 'user@test.com,',
+    passwordHash: pwd2,
+    address: {
+      line1: '123 Test St',
+      city: 'London',
+      postcode: 'NW2 8BX',
+    },
+  });
+
+  const cust4 = await Customer.create({
+    name: 'Customer not belonging to user',
+    email: 'john@doe.com',
+    address: {
+      line1: '124 Park St',
+      city: 'London',
+      postcode: 'LN1 8GB',
+    },
+    user: user2._id,
+  });
+
+  user2.customers = [cust4];
+  await user2.save();
+
+  user.customers = [cust1, cust2, cust3];
+  await user.save();
+
+  // add another user with no customers to ensure requests return empty array
+  const pwd3 = await bcrypt.hash('Password123', 10);
+  const user3 = await User.create({
+    name: 'User 3',
+    email: 'user3@test.com',
+    passwordHash: pwd3,
+    address: {
+      line1: '123 Test St',
+      city: 'London',
+      postcode: 'NW2 8BX',
+    },
+  });
 });
 
 afterAll(async () => {
   await db.testServer.stop();
 });
 
-/**
- * START TESTS
- */
-
-describe('GET /api/customers', () => {
-  test('empty database returns an empty array: 200', async () => {
-    const res = await api
-      .get('/api/customers')
-      .expect(200)
-      .expect('content-type', /application\/json/);
-
-    expect(res.body).toStrictEqual([]);
-  });
-
-  test('database with entries returns all customers: 200', async () => {
-    const customers = await Customer.create(customerInput);
-
-    const expected = JSON.parse(JSON.stringify(customers));
-    const res = await api
-      .get('/api/customers')
-      .expect(200)
-      .expect('content-type', /application\/json/);
-
-    expect(res.body).toEqual(expected);
-    expect(res.body).toHaveLength(customerInput.length);
-  });
-});
-
-describe('GET /api/customers/:id', () => {
-  let customerId: string;
+describe('customer', () => {
+  let accessToken = '';
+  let accessToken2 = '';
 
   beforeAll(async () => {
-    await Customer.deleteMany({});
-    const { id } = await Customer.create(customerInput[0]);
-    customerId = id;
-  });
-
-  test('a customer can be fetched by id: 200', async () => {
-    const res = await api
-      .get(`/api/customers/${customerId}`)
-      .expect(200)
-      .expect('content-type', /application\/json/);
-
-    expect(res.body).toBeDefined();
-  });
-
-  test('fetched customer returns expected fields and types', async () => {
-    const expected = {
-      ...customerInput[0],
-      id: customerId,
-    };
-
-    console.log(expected);
-
-    const res = await api
-      .get(`/api/customers/${customerId}`)
-      .expect(200)
-      .expect('content-type', /application\/json/);
-
-    console.log(res.body);
-
-    expect(res.body).toEqual(expected);
-  });
-
-  // TODO: check for uppercasing of and trimming of postcode field?
-  test('fetching a customer with malformatted id errors => invalid_string: 400', async () => {
-    const res = await api
-      .get('/api/customers/malformattedId')
-      .expect(400)
-      .expect('content-type', /application\/json/);
-
-    expect(res.body.error.issues).toEqual([
-      expect.objectContaining({ code: 'invalid_string' }),
-    ]);
-  });
-
-  test('fetching a customer with an incorrect id erors: 404', async () => {
-    await api.get('/api/customers/abcdef0123456789abcdef00').expect(404);
-  });
-});
-
-describe('POST /api/customers', () => {
-  beforeEach(async () => {
-    await Customer.deleteMany({});
-    console.log('beforeEach');
-  });
-
-  test('creating a valid customer adds it to the database: 201', async () => {
-    const res = await api
-      .post('/api/customers')
-      .send(customerInput[0])
-      .expect(201)
-      .expect('content-type', /application\/json/);
-
-    expect(res.body).toBeDefined();
-    expect(await Customer.countDocuments({})).toBe(1);
-  });
-
-  test('creating a valid customer returns object with expected types and values: 201', async () => {
-    // TODO: not sure if this is needed in this way?
-    // as there are no nested things that need converting like Date object, or nested id's to deal with,
-    // could just make this test a 'returns expected object' type test. (may need to implement postcode formatting)
-    const expected = {
-      ...customerInput[0],
-      id: expect.stringMatching(/^[0-9a-f]{24}$/),
-    };
-
-    const res = await api
-      .post('/api/customers')
-      .send(customerInput[0])
-      .expect(201)
-      .expect('content-type', /application\/json/);
-
-    expect(res.body).toEqual(expected);
-  });
-
-  // TODO: tests for postcode return formatted correctly
-
-  describe('name field is validated: 400', () => {
-    test('missing => invalid_type', async () => {
-      const res = await api
-        .post('/api/customers')
-        .send(omit(customerInput[0], 'name'))
-        .expect(400)
-        .expect('content-type', /application\/json/);
-
-      expect(await Customer.countDocuments({})).toBe(0);
-      expect(res.body.error.issues).toEqual([
-        expect.objectContaining({ code: 'invalid_type' }),
-      ]);
+    // login test user and get access token
+    const res = await api.post('/auth/login').send({
+      email: 'sherlock@baker-st.com',
+      password: 'Password123',
     });
 
-    test('wrong type => invalid_type', async () => {
-      const res = await api
-        .post('/api/customers')
-        .send({
-          ...customerInput[0],
-          name: true,
-        })
-        .expect(400)
-        .expect('content-type', /application\/json/);
+    accessToken = `Bearer ${res.body.accessToken}`;
 
-      expect(await Customer.countDocuments({})).toBe(0);
-      expect(res.body.error.issues).toEqual([
-        expect.objectContaining({ code: 'invalid_type' }),
-      ]);
+    const res2 = await api.post('/auth/login').send({
+      email: 'user3@test.com',
+      password: 'Password123',
     });
 
-    // TODO: test to include trimmed strings?
-    test('empty string => too_small', async () => {
-      const res = await api
-        .post('/api/customers')
-        .send({
-          ...customerInput[0],
-          name: '',
-        })
-        .expect(400)
-        .expect('content-type', /application\/json/);
+    accessToken2 = `Bearer ${res2.body.accessToken}`;
+  });
 
-      expect(await Customer.countDocuments({})).toBe(0);
-      expect(res.body.error.issues).toEqual([
-        expect.objectContaining({ code: 'too_small' }),
-      ]);
+  describe('GET /api/customers', () => {
+    it('request with a signed but non-existant user token unauthorized', async () => {
+      const wrongUserToken = jwt.sign(
+        {
+          email: 'wrong@user.com',
+          id: '123456',
+          sum: '123456',
+        },
+        'access-token-secret',
+        { expiresIn: '1d' }
+      );
+
+      await api
+        .get('/api/customers')
+        .set('Authorization', `Bearer ${wrongUserToken}`)
+        .expect(401);
     });
 
-    test('string > 35 chars => too_big', async () => {
+    it('request without bearer token is unauthorized', async () => {
+      await api.get('/api/customers').expect(401);
+    });
+
+    it('logged-in user can get customers belonging to their account', async () => {
       const res = await api
-        .post('/api/customers')
-        .send({
-          ...customerInput[0],
-          name: 'qwertyuiop asdfghjklzxcvbnmqwertyuio',
-        })
-        .expect(400)
+        .get('/api/customers')
+        .set('Authorization', accessToken)
+        .expect(200)
         .expect('content-type', /application\/json/);
 
-      expect(await Customer.countDocuments({})).toBe(0);
-      expect(res.body.error.issues).toEqual([
-        expect.objectContaining({ code: 'too_big' }),
-      ]);
+      expect(res.body).toHaveLength(3);
+    });
+
+    it('logged-in user with no customers returns an empty array', async () => {
+      const res = await api
+        .get('/api/customers')
+        .set('Authorization', accessToken2)
+        .expect(200)
+        .expect('content-type', /application\/json/);
+
+      expect(res.body).toEqual([]);
     });
   });
 
-  describe('email is validated: 400', () => {
-    test('missing => invalid_type', async () => {
-      const res = await api
-        .post('/api/customers')
-        .send(omit(customerInput[0], 'email'))
-        .expect(400)
-        .expect('content-type', /application\/json/);
+  describe('GET /api/customers/:customerId', () => {
+    it('logged-in user can get a specific customer belonging to their account', async () => {
+      const customer = await Customer.findOne({ name: 'George Holloway' });
+      const customerId = customer!.toJSON().id;
 
-      expect(await Customer.countDocuments({})).toBe(0);
-      expect(res.body.error.issues).toEqual([
-        expect.objectContaining({ code: 'invalid_type' }),
-      ]);
+      const res = await api
+        .get(`/api/customers/${customerId}`)
+        .set('Authorization', accessToken)
+        .expect(200);
+
+      expect(res.body).toEqual(
+        expect.objectContaining({ name: 'George Holloway' })
+      );
     });
 
-    test('wrong type => invalid_type', async () => {
+    it('requesting a customer that is not found returns 404', async () => {
       const res = await api
-        .post('/api/customers')
-        .send({
-          ...customerInput[0],
-          email: true,
-        })
-        .expect(400)
-        .expect('content-type', /application\/json/);
+        .get('/api/customers/1234567890abcdef12345678')
+        .set('Authorization', accessToken)
+        .expect(404);
 
-      expect(await Customer.countDocuments({})).toBe(0);
-      expect(res.body.error.issues).toEqual([
-        expect.objectContaining({ code: 'invalid_type' }),
-      ]);
-    });
-
-    test('malformatted => invalid_string', async () => {
-      const res = await api
-        .post('/api/customers')
-        .send({
-          ...customerInput[0],
-          email: 'email@address@com',
-        })
-        .expect(400)
-        .expect('content-type', /application\/json/);
-
-      expect(await Customer.countDocuments({})).toBe(0);
-      expect(res.body.error.issues).toEqual([
-        expect.objectContaining({ code: 'invalid_string' }),
-      ]);
+      expect(res.text).toEqual('Not Found');
     });
   });
 
-  describe('address fields are validated: 400', () => {
-    test('missing => invalid_type', async () => {
-      const res = await api
-        .post('/api/customers')
-        .send(omit(customerInput[0], 'address'))
-        .expect(400)
-        .expect('content-type', /application\/json/);
-
-      expect(await Customer.countDocuments({})).toBe(0);
-      expect(res.body.error.issues).toEqual([
-        expect.objectContaining({ code: 'invalid_type' }),
-      ]);
-    });
-
-    test('wrong type => invalid_type', async () => {
-      const res = await api
-        .post('/api/customers')
-        .send({
-          ...customerInput[0],
-          address: true,
-        })
-        .expect(400)
-        .expect('content-type', /application\/json/);
-
-      expect(await Customer.countDocuments({})).toBe(0);
-      expect(res.body.error.issues).toEqual([
-        expect.objectContaining({ code: 'invalid_type' }),
-      ]);
-    });
-  });
-
-  describe('line1 is validated: 400', () => {
-    test('missing => invalid_type', async () => {
-      const res = await api
-        .post('/api/customers')
-        .send({
-          ...customerInput[0],
-          address: omit(customerInput[0]?.address, 'line1'),
-        })
-        .expect(400)
-        .expect('content-type', /application\/json/);
-
-      expect(await Customer.countDocuments({})).toBe(0);
-      expect(res.body.error.issues).toEqual([
-        expect.objectContaining({ code: 'invalid_type' }),
-      ]);
-    });
-
-    test('wrong type => invalid_type', async () => {
-      const res = await api
-        .post('/api/customers')
-        .send({
-          ...customerInput[0],
-          address: {
-            ...customerInput[0]!.address,
-            line1: true,
-          },
-        })
-        .expect(400)
-        .expect('content-type', /application\/json/);
-
-      expect(await Customer.countDocuments({})).toBe(0);
-      expect(res.body.error.issues).toEqual([
-        expect.objectContaining({ code: 'invalid_type' }),
-      ]);
-    });
-
-    test('empty string => too_small', async () => {
-      const res = await api
-        .post('/api/customers')
-        .send({
-          ...customerInput[0],
-          address: {
-            ...customerInput[0]!.address,
-            line1: '',
-          },
-        })
-        .expect(400)
-        .expect('content-type', /application\/json/);
-
-      expect(await Customer.countDocuments({})).toBe(0);
-      expect(res.body.error.issues).toEqual([
-        expect.objectContaining({ code: 'too_small' }),
-      ]);
-    });
-  });
-
-  describe('line2 is validated: 400', () => {
-    test('wrong type => invalid_type', async () => {
-      const res = await api
-        .post('/api/customers')
-        .send({
-          ...customerInput[0],
-          address: {
-            ...customerInput[0]!.address,
-            line2: true,
-          },
-        })
-        .expect(400)
-        .expect('content-type', /application\/json/);
-
-      expect(await Customer.countDocuments({})).toBe(0);
-      expect(res.body.error.issues).toEqual([
-        expect.objectContaining({ code: 'invalid_type' }),
-      ]);
-    });
-
-    test('empty string => too_small', async () => {
-      const res = await api
-        .post('/api/customers')
-        .send({
-          ...customerInput[0],
-          address: {
-            ...customerInput[0]!.address,
-            line2: '',
-          },
-        })
-        .expect(400)
-        .expect('content-type', /application\/json/);
-
-      expect(await Customer.countDocuments({})).toBe(0);
-      expect(res.body.error.issues).toEqual([
-        expect.objectContaining({ code: 'too_small' }),
-      ]);
-    });
-  });
-
-  describe('city is validated: 400', () => {
-    test('missing => invalid_type', async () => {
-      const res = await api
-        .post('/api/customers')
-        .send({
-          ...customerInput[0],
-          address: omit(customerInput[0]!.address, 'city'),
-        })
-        .expect(400)
-        .expect('content-type', /application\/json/);
-
-      expect(await Customer.countDocuments({})).toBe(0);
-      expect(res.body.error.issues).toEqual([
-        expect.objectContaining({ code: 'invalid_type' }),
-      ]);
-    });
-
-    test('wrong type => invalid_type', async () => {
-      const res = await api
-        .post('/api/customers')
-        .send({
-          ...customerInput[0],
-          address: {
-            ...customerInput[0]!.address,
-            city: true,
-          },
-        })
-        .expect(400)
-        .expect('content-type', /application\/json/);
-
-      expect(await Customer.countDocuments({})).toBe(0);
-      expect(res.body.error.issues).toEqual([
-        expect.objectContaining({ code: 'invalid_type' }),
-      ]);
-    });
-
-    test('empty string => too_small', async () => {
-      const res = await api
-        .post('/api/customers')
-        .send({
-          ...customerInput[0],
-          address: {
-            ...customerInput[0]!.address,
-            city: '',
-          },
-        })
-        .expect(400)
-        .expect('content-type', /application\/json/);
-
-      expect(await Customer.countDocuments({})).toBe(0);
-      expect(res.body.error.issues).toEqual([
-        expect.objectContaining({ code: 'too_small' }),
-      ]);
-    });
-  });
-
-  describe('county is validated: 400', () => {
-    test('wrong type => invalid_type', async () => {
-      const res = await api
-        .post('/api/customers')
-        .send({
-          ...customerInput[0],
-          address: {
-            ...customerInput[0]!.address,
-            county: true,
-          },
-        })
-        .expect(400)
-        .expect('content-type', /application\/json/);
-
-      expect(await Customer.countDocuments({})).toBe(0);
-      expect(res.body.error.issues).toEqual([
-        expect.objectContaining({ code: 'invalid_type' }),
-      ]);
-    });
-
-    test('empty string => too_small', async () => {
-      const res = await api
-        .post('/api/customers')
-        .send({
-          ...customerInput[0],
-          address: {
-            ...customerInput[0]!.address,
-            county: '',
-          },
-        })
-        .expect(400)
-        .expect('content-type', /application\/json/);
-
-      expect(await Customer.countDocuments({})).toBe(0);
-      expect(res.body.error.issues).toEqual([
-        expect.objectContaining({ code: 'too_small' }),
-      ]);
-    });
-  });
-
-  describe('postcode is validated: 400', () => {
-    test('missing => invalid_type', async () => {
-      const res = await api
-        .post('/api/customers')
-        .send({
-          ...customerInput[0],
-          address: omit(customerInput[0]!.address, 'postcode'),
-        })
-        .expect(400)
-        .expect('content-type', /application\/json/);
-
-      expect(await Customer.countDocuments({})).toBe(0);
-      expect(res.body.error.issues).toEqual([
-        expect.objectContaining({ code: 'invalid_type' }),
-      ]);
-    });
-
-    test('wrong type => invalid_type', async () => {
-      const res = await api
-        .post('/api/customers')
-        .send({
-          ...customerInput[0],
-          address: {
-            ...customerInput[0]!.address,
-            postcode: true,
-          },
-        })
-        .expect(400)
-        .expect('content-type', /application\/json/);
-
-      expect(await Customer.countDocuments({})).toBe(0);
-      expect(res.body.error.issues).toEqual([
-        expect.objectContaining({ code: 'invalid_type' }),
-      ]);
-    });
-
-    test('empty string => invalid_string', async () => {
-      const res = await api
-        .post('/api/customers')
-        .send({
-          ...customerInput[0],
-          address: {
-            ...customerInput[0]!.address,
-            postcode: '',
-          },
-        })
-        .expect(400)
-        .expect('content-type', /application\/json/);
-
-      expect(await Customer.countDocuments({})).toBe(0);
-      expect(res.body.error.issues).toEqual([
-        expect.objectContaining({ code: 'invalid_string' }),
-      ]);
-    });
-
-    test('malformatted string => invalid_string', async () => {
-      const res = await api
-        .post('/api/customers')
-        .send({
-          ...customerInput[0],
-          address: {
-            ...customerInput[0]!.address,
-            postcode: 'B2BBCY3',
-          },
-        })
-        .expect(400)
-        .expect('content-type', /application\/json/);
-
-      expect(await Customer.countDocuments({})).toBe(0);
-      expect(res.body.error.issues).toEqual([
-        expect.objectContaining({ code: 'invalid_string' }),
-      ]);
-    });
-  });
-});
-
-describe('DELETE /api/customers/:id', () => {
-  let customerId: string;
-
-  beforeAll(async () => {
-    const { id } = await Customer.create(customerInput[0]);
-    customerId = id;
-  });
-
-  test('a customer can be deleted by id: 204', async () => {
-    await api.delete(`/api/customers/${customerId}`).expect(204);
-    expect(await Customer.findById(customerId)).toBe(null);
-  });
-
-  test('deleting an already-deleted customer returns: 404', async () => {
-    await api.delete(`/api/customers/${customerId}`).expect(404);
-    expect(await Customer.findById(customerId)).toBe(null);
-  });
-
-  test('deleting a non-existing customer returns: 404', async () => {
-    await api.delete('/api/customers/1234567890abcdef12345678').expect(404);
-  });
-
-  test('passing an invalid id request parameter returns: 400', async () => {
-    await api.delete('/api/customers/1234567890invalid').expect(400);
-  });
-});
-
-describe('PUT /api/customers/:id', () => {
-  let customerId: string;
-
-  beforeAll(async () => {
-    await Customer.deleteMany({});
-    const { id } = await Customer.create(customerInput[0]);
-    customerId = id;
-  });
-
-  test('a customer can be edited by id: 200', async () => {
-    const edited = {
-      ...customerInput[0],
-      email: 'sherlock@investigator.com',
+  describe('POST /api/customers', () => {
+    const customer = {
+      name: 'Harry Kingsley',
+      email: 'harry@kingsley.com',
       address: {
-        ...customerInput[0]!.address,
-        line2: 'Hammersmith',
+        line1: '42 Landsdown Rd',
+        city: 'Bristol',
+        postcode: 'BS10 6RS',
       },
-      id: customerId,
     };
-    const res = await api
-      .put(`/api/customers/${customerId}`)
-      .send(edited)
-      .expect(200)
-      .expect('content-type', /application\/json/);
 
-    expect(res.body).toMatchObject(JSON.parse(JSON.stringify(edited)));
+    it('logged in user can create customers', async () => {
+      const res = await api
+        .post('/api/customers')
+        .set('Authorization', accessToken)
+        .send(customer)
+        .expect(201);
+
+      expect(res.body).toEqual(
+        expect.objectContaining({ name: 'Harry Kingsley' })
+      );
+
+      const createdCustomer = await Customer.findOne({
+        name: 'Harry Kingsley',
+      });
+      expect(createdCustomer).toBeDefined();
+    });
+
+    it('validates: missing name', async () => {
+      const res = await api
+        .post('/api/customers')
+        .set('Authorization', accessToken)
+        .send(omit(customer, 'name'))
+        .expect(400);
+
+      expect(res.body.error.issues[0].code).toEqual('invalid_type');
+    });
+
+    it('validates: name too short', async () => {
+      const res = await api
+        .post('/api/customers')
+        .set('Authorization', accessToken)
+        .send({
+          ...customer,
+          name: 'A',
+        })
+        .expect(400);
+
+      expect(res.body.error.issues[0].code).toEqual('too_small');
+    });
+
+    it('validates: name too long', async () => {
+      const res = await api
+        .post('/api/customers')
+        .set('Authorization', accessToken)
+        .send({
+          ...customer,
+          name: 'Name is thirty six characters long !',
+        })
+        .expect(400);
+
+      expect(res.body.error.issues[0].code).toEqual('too_big');
+    });
+
+    it('validates: missing email', async () => {
+      const res = await api
+        .post('/api/customers')
+        .set('Authorization', accessToken)
+        .send(omit(customer, 'email'))
+        .expect(400);
+
+      expect(res.body.error.issues[0].code).toEqual('invalid_type');
+    });
+
+    it('validates: invalid email', async () => {
+      const res = await api
+        .post('/api/customers')
+        .set('Authorization', accessToken)
+        .send({
+          ...customer,
+          email: 'invalid.email@com',
+        })
+        .expect(400);
+
+      expect(res.body.error.issues[0].code).toEqual('invalid_string');
+    });
+
+    it('validates: missing address', async () => {
+      const res = await api
+        .post('/api/customers')
+        .set('Authorization', accessToken)
+        .send(omit(customer, 'address'))
+        .expect(400);
+
+      expect(res.body.error.issues[0].code).toEqual('invalid_type');
+    });
+
+    it('validates: missing address.line1', async () => {
+      const res = await api
+        .post('/api/customers')
+        .set('Authorization', accessToken)
+        .send(omit(customer, 'address.line1'))
+        .expect(400);
+
+      expect(res.body.error.issues[0].code).toEqual('invalid_type');
+    });
+
+    it('validates: missing address.city', async () => {
+      const res = await api
+        .post('/api/customers')
+        .set('Authorization', accessToken)
+        .send(omit(customer, 'address.city'))
+        .expect(400);
+
+      expect(res.body.error.issues[0].code).toEqual('invalid_type');
+    });
+
+    it('validates: missing address.postcode', async () => {
+      const res = await api
+        .post('/api/customers')
+        .set('Authorization', accessToken)
+        .send(omit(customer, 'address.postcode'))
+        .expect(400);
+
+      expect(res.body.error.issues[0].code).toEqual('invalid_type');
+    });
+
+    it('validates: regex for address.postcode', async () => {
+      const res = await api
+        .post('/api/customers')
+        .set('Authorization', accessToken)
+        .send({
+          ...customer,
+          address: {
+            ...customer.address,
+            postcode: 'PX104',
+          },
+        })
+        .expect(400);
+
+      expect(res.body.error.issues[0].code).toEqual('invalid_string');
+    });
+  });
+
+  describe('PUT /api/customers/:customerId', () => {
+    it('logged-in user can edit a customer', async () => {
+      const user = await User.findOne({ name: 'Sherlock Holmes' });
+      await user!.populate('customers');
+
+      const customerId = user!.customers[1]!.id;
+      const res = await api
+        .put(`/api/customers/${customerId}`)
+        .set('Authorization', accessToken)
+        .send({
+          name: 'Gordon Holloway',
+          email: 'gordon@holloway.com',
+          address: {
+            line1: '36B',
+            line2: 'Hannover St.',
+            city: 'Romsey',
+            county: 'Hampshire',
+            postcode: 'HM3 9RS',
+          },
+        })
+        .expect(200);
+
+      expect(res.body).toEqual(
+        expect.objectContaining({ name: 'Gordon Holloway' })
+      );
+    });
+
+    it('logged-in user cannot edit a customer belonging to another user: (404)', async () => {
+      const customer = await Customer.findOne({
+        name: 'Customer not belonging to user',
+      });
+
+      await api
+        .put(`/api/customers/${customer!.id}`)
+        .set('Authorization', accessToken)
+        .send({
+          name: 'Terry Gibbs',
+          email: 'terry@gibbs.com',
+          address: {
+            line1: '36B',
+            line2: 'Hannover St.',
+            city: 'Romsey',
+            county: 'Hampshire',
+            postcode: 'HM3 9RS',
+          },
+        })
+        .expect(404);
+    });
+  });
+
+  describe('DELETE /api/customers/:customerId', () => {
+    it('logged-in user can delete a customer', async () => {
+      const customer = await Customer.findOne({ name: 'Laura Brand' });
+
+      await api
+        .delete(`/api/customers/${customer!.id}`)
+        .set('Authorization', accessToken)
+        .expect(204);
+    });
+
+    it('logged-in cannot delete a customer belonging to another user: (404)', async () => {
+      const customer = await Customer.findOne({
+        name: 'Customer not belonging to user',
+      });
+
+      await api
+        .delete(`/api/customers/${customer!.id}`)
+        .set('Authorization', accessToken)
+        .expect(404);
+    });
   });
 });
 

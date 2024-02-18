@@ -11,7 +11,7 @@ module.exports = {
     tsconfigRootDir: __dirname,
   },
   root: true,
-  ignorePatterns: ['.eslintrc.cjs', 'dist'],
+  ignorePatterns: ['.eslintrc.cjs', 'dist', 'src/tests'],
   rules: {
     // disable rule for async functions in express:
     // allows passing () => Promise<void> to () => void

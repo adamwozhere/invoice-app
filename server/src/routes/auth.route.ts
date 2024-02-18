@@ -4,12 +4,12 @@ import {
   logoutHandler,
   refreshHandler,
 } from '../controllers/auth.controller';
-import { loginUserSchema } from '../schemas/user.schema';
+import { loginSchema } from '../schemas/auth.schema';
 import validate from '../middleware/requestValidator';
 
 const router = Router();
 
-router.post('/login', validate(loginUserSchema), loginHandler);
+router.post('/login', validate(loginSchema), loginHandler);
 router.get('/refresh', refreshHandler);
 router.get('/logout', logoutHandler);
 

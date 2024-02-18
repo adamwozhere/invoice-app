@@ -2,22 +2,15 @@ import mongoose from 'mongoose';
 import config from './config';
 import logger from './logger';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import Counters from '../models/counters.model';
 
 const connect = async () => {
   if (process.env.NODE_ENV !== 'test') {
     try {
-      await mongoose.connect(config.MONGODB_URI);
+      const conn = await mongoose.connect(config.MONGODB_URI);
 
-      // TODO: remove this as it will eventually be held in a User document
-      // needs to do this only once
-      if ((await Counters.countDocuments({})) === 0) {
-        await Counters.create({ name: 'counter' });
-      }
-
-      logger.info(`Database connected: ${config.MONGODB_URI}`);
+      logger.info(`MongoDB connected: ${conn.connection.host}`);
     } catch (err: unknown) {
-      logger.error(`Could not connect to database`);
+      logger.error('Could not connect to MongoDB');
       process.exit(1);
     }
   }
@@ -44,9 +37,6 @@ const testServer = {
     const uri = mongoServer.getUri();
     await mongoose.connect(uri);
 
-    // TODO: not working in test in single thread mode - maybe need to have the function be called from the model on invoice creation?
-    await Counters.deleteMany({});
-    await Counters.create({ name: 'counter' });
     logger.info(`Connected to Mongo memory server: ${uri}`);
   },
 
@@ -58,7 +48,6 @@ const testServer = {
     for (const collection of collections) {
       await collection.drop();
     }
-    await Counters.create({ name: 'counter' });
   },
 
   stop: async () => {

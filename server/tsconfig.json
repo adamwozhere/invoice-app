@@ -20,6 +20,7 @@
     "outDir": "dist",
     "sourceMap": true,
 
+    // "typeRoots": ["./node_modules/@types", "./typings/"],
     /* If your code doesn't run in the DOM: */
     "lib": ["es2022"]
   }

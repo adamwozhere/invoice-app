@@ -1,10 +1,11 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema, Types } from 'mongoose';
 
 // TODO: check and investigate if my customer property should be ObjectId or string
 // the interface represents the Document as it is in mongoose,
 // however when creating an invoice and adding a customer it is passed as a string.
 // check if providing string to a ObjectId is compatible
 
+// should this extend Document?
 export interface CustomerDocument {
   name: string;
   email: string;
@@ -16,6 +17,7 @@ export interface CustomerDocument {
     postcode: string;
   };
   id: string; // mongoose virtual: string version of ObjectId
+  user: Types.ObjectId; // id of user
 }
 
 // TODO: do I need this or is it just the one from zod I need?
@@ -56,6 +58,11 @@ const customerSchema = new Schema<CustomerDocument>(
     },
     address: {
       type: addressSchema,
+      required: true,
+    },
+    user: {
+      type: Schema.Types.ObjectId, // use Schema.Types.ObjectId in Schemas
+      ref: 'User',
       required: true,
     },
   },

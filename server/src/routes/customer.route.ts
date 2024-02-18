@@ -2,26 +2,47 @@ import { Router } from 'express';
 
 import {
   deleteCustomerHandler,
-  getAllCustomersHandler,
-  getCustomerHandler,
-  postCustomerHandler,
+  getCustomersHandler,
+  getSingleCustomerHandler,
+  createCustomerHandler,
   putCustomerByIdHandler,
-} from '../controllers/customer';
+} from '../controllers/customer.controller';
 import validate from '../middleware/requestValidator';
 import {
   createCustomerSchema,
   deleteCustomerSchema,
   editCustomerSchema,
-  getCustomerByIdSchema,
+  getSingleCustomerSchema,
 } from '../schemas/customer.schema';
+import { authUser } from '../middleware/authUser';
 
 const router = Router();
 
-router.get('/', getAllCustomersHandler);
-router.get('/:id', validate(getCustomerByIdSchema), getCustomerHandler);
-router.post('/', validate(createCustomerSchema), postCustomerHandler);
-router.delete('/:id', validate(deleteCustomerSchema), deleteCustomerHandler);
-router.put('/:id', validate(editCustomerSchema), putCustomerByIdHandler);
+router.get('/', authUser, getCustomersHandler);
+router.get(
+  '/:customerId',
+  authUser,
+  validate(getSingleCustomerSchema),
+  getSingleCustomerHandler
+);
+router.post(
+  '/',
+  authUser,
+  validate(createCustomerSchema),
+  createCustomerHandler
+);
+router.delete(
+  '/:customerId',
+  authUser,
+  validate(deleteCustomerSchema),
+  deleteCustomerHandler
+);
+router.put(
+  '/:customerId',
+  authUser,
+  validate(editCustomerSchema),
+  putCustomerByIdHandler
+);
 
 export default router;
 

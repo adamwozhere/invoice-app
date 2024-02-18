@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-
 // TODO: unify error handler messages, e.g. so that all bring back an object with { error: 'message' },
 // and possibly also { code: 'invalid_type' } etc ?
 // TODO: refactor tests, with util functions for setups ?
@@ -12,7 +9,6 @@ import db from '../utils/db';
 import app from '../app';
 import User from '../models/user.model';
 import jwt from 'jsonwebtoken';
-import logger from '../utils/logger';
 
 const api = supertest(app);
 
@@ -20,7 +16,7 @@ beforeAll(async () => {
   await db.testServer.start();
 
   // create test user
-  const pwd = await bcrypt.hash('password123', 10);
+  const pwd = await bcrypt.hash('Password123', 10);
   await User.create({
     name: 'Sherlock Holmes',
     email: 'sherlock@baker-st.com',
@@ -55,18 +51,32 @@ describe('auth', () => {
   describe('POST /auth/login', () => {
     // TODO: payload error messages from zod -- working but not checking each individual case,
     // as if slips through it will just fail with unauthorized if credentials incorrect
-    it('logging in with missing fields errors: 400', async () => {
+    it('logging in with missing email errors: 400', async () => {
       const res = await api
         .post('/auth/login')
         .send({
-          email: 'no-address',
-          password: '',
+          password: 'Password123',
         })
         .expect(400);
 
       expect(res.body.error.issues).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ code: 'invalid_string' }),
+          expect.objectContaining({ code: 'invalid_type' }),
+        ])
+      );
+    });
+
+    it('logging in with missing password errors: 400', async () => {
+      const res = await api
+        .post('/auth/login')
+        .send({
+          email: 'Sherlock@baker-st.com',
+        })
+        .expect(400);
+
+      expect(res.body.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ code: 'invalid_type' }),
         ])
       );
     });
@@ -105,7 +115,7 @@ describe('auth', () => {
         .post('/auth/login')
         .send({
           email: 'sherlock@baker-st.com',
-          password: 'password123',
+          password: 'Password123',
         })
         .expect(200)
         .expect('content-type', /application\/json/);
@@ -136,7 +146,7 @@ describe('auth', () => {
         .set('Cookie', refreshCookie)
         .send({
           email: 'sherlock@baker-st.com',
-          password: 'password123',
+          password: 'Password123',
         })
         .expect(200);
 
@@ -150,7 +160,7 @@ describe('auth', () => {
         .set('Cookie', refreshCookie)
         .send({
           email: 'sherlock@baker-st.com',
-          password: 'password123',
+          password: 'Password123',
         })
         .expect(200);
 
@@ -214,11 +224,10 @@ describe('auth', () => {
     beforeAll(async () => {
       const res = await api.post('/auth/login').send({
         email: 'sherlock@baker-st.com',
-        password: 'password123',
+        password: 'Password123',
       });
 
       refreshCookie = res.get('Set-Cookie');
-      logger.info(`the refresh cookies are: ${JSON.stringify(refreshCookie)}`);
     });
 
     it('user can logout correctly', async () => {

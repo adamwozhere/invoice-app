@@ -1,5 +1,9 @@
-import Invoice from '../models/invoice.model';
 import { CustomerDocument } from '../models/customer.model';
+import Invoice, {
+  InvoiceDocument,
+  InvoiceInput,
+} from '../models/invoice.model';
+import { UserDocument } from '../models/user.model';
 
 // TODO: check queries / sanitizing
 // see:
@@ -9,22 +13,32 @@ import { CustomerDocument } from '../models/customer.model';
 // Do this instead:
 //const docs = await MyModel.find({ name: req.query.name, age: req.query.age }).setOptions({ sanitizeFilter: true });
 
-export async function getAllInvoices() {
+export const getInvoices = async (user: UserDocument | undefined) => {
+  // TODO: look at the docus for using PopulatedDoc
   // const invoice = await Invoice.find({}).populate<{
   //   customer: CustomerDocument;
   // }>('customer');
-  const invoice = await Invoice.find({}).sort('invoiceNumber').populate<{
-    customer: CustomerDocument;
-  }>('customer');
-  return invoice;
-}
 
-export async function getInvoiceById(id: string) {
-  const invoice = await Invoice.findById(id).populate<{
-    customer: CustomerDocument;
-  }>('customer');
-  return invoice;
-}
+  const populated = await user?.populate('invoices');
+  return populated?.invoices;
+};
+
+export const getSingleInvoice = async (
+  user: UserDocument | undefined,
+  invoiceId: string
+) => {
+  const populated = await user?.populate({
+    path: 'invoices',
+    match: { _id: invoiceId },
+  });
+
+  return populated?.invoices[0];
+};
+
+export const createInvoice = async (data: InvoiceInput) => {
+  const invoice = await Invoice.create(data);
+  return invoice.populate('customer');
+};
 
 export async function updateInvoiceById(id: string, data: object) {
   const invoice = await Invoice.findByIdAndUpdate(id, data).populate<{
@@ -33,25 +47,32 @@ export async function updateInvoiceById(id: string, data: object) {
   return invoice;
 }
 
-export const createInvoice = async (data: object) => {
-  const invoice = new Invoice(data);
-  await invoice.save();
-  return invoice.populate<{ customer: CustomerDocument }>('customer');
-};
+export const deleteInvoiceById = async (user: UserDocument, id: string) => {
+  const foundInvoice = user.invoices.find((i) => i?.toString() === id);
+  if (!foundInvoice) {
+    return null;
+  }
+  const deleted = await Invoice.findOneAndDelete<InvoiceDocument>({
+    _id: id,
+  });
 
-export const deleteInvoiceById = async (id: string) => {
-  const deleted = await Invoice.findByIdAndDelete(id);
-  console.log('DELETED', deleted);
   return deleted;
 };
 
-export const editInvoiceById = async (id: string, data: object) => {
-  // const edited = await Invoice.findByIdAndUpdate(id, data, {
-  //   returnDocument: 'after',
-  // });
-  const edited = await Invoice.findOneAndReplace({ _id: id }, data, {
-    returnDocument: 'after',
+export const editInvoiceById = async (
+  user: UserDocument,
+  id: string,
+  data: InvoiceInput
+) => {
+  const foundInvoice = user.invoices.find((i) => i?.toString() === id);
+  if (!foundInvoice) {
+    return null;
+  }
+
+  const invoice = await Invoice.findOneAndUpdate({ _id: id }, data, {
+    returnedDocument: 'after',
   });
-  return edited;
+
+  return invoice;
 };
 

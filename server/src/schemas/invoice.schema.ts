@@ -47,7 +47,7 @@ export const invoiceBody = {
 
 export const invoiceParams = {
   params: z.object({
-    id: objectIdSchema,
+    invoiceId: objectIdSchema,
   }),
 };
 

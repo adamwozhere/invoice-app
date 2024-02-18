@@ -4,20 +4,14 @@ import jwt from 'jsonwebtoken';
 import logger from '../utils/logger';
 import User, { UserDocument } from '../models/user.model';
 
-// TODO: work out how to do the requests properly, as I can't do:
-// Request<object, object, LoginUserInput['body']> and also have cookies?
+// TODO: proper config for getting the jwt secrets from env vars. keeping them typed etc, and the jwt.sub ? or use jwt.id ?
+// TODO: jwt / cookie options object for being able to change secure cookies on and off for dev/test or production
+// TODO: password validation in the user.model or auth.service, and put auth util functions in there ? or jwt utils in /utils ?
 
-// maybe it would just be easier to extend all the interfaces for the Request or Response in the controllers as in here?
-
-interface RequestWithCookie extends Request {
-  cookies: { jwt?: string };
-}
-
-interface LoginRequest extends RequestWithCookie {
-  body: { email: string; password: string };
-}
-
-export const loginHandler = async (req: LoginRequest, res: Response) => {
+export const loginHandler = async (
+  req: Request<object, object, { email: string; password: string }>,
+  res: Response
+) => {
   const { cookies } = req;
   const { email, password } = req.body;
 
@@ -26,7 +20,7 @@ export const loginHandler = async (req: LoginRequest, res: Response) => {
   const passwordCorrect =
     user === null ? false : await bcrypt.compare(password, user.passwordHash);
 
-  if (!(user && passwordCorrect)) {
+  if (!user || !passwordCorrect) {
     return res.status(401).json({ error: 'Invalid email or password' });
   }
 
@@ -87,15 +81,17 @@ export const loginHandler = async (req: LoginRequest, res: Response) => {
   return res.json({ accessToken, email: user.email });
 };
 
-export const logoutHandler = async (req: RequestWithCookie, res: Response) => {
-  // also need to delete bearer token on client
+export const logoutHandler = async (req: Request, res: Response) => {
+  // NOTE: Also need to delete bearer token on client
 
   const { cookies } = req;
 
-  logger.info(`cookie: ${JSON.stringify(cookies)}`);
+  logger.info(`logoutHandler cookies are: ${JSON.stringify(cookies)}`);
+
   if (!cookies?.jwt) {
-    return res.sendStatus(204); // No content
+    return res.sendStatus(204);
   }
+
   const refreshToken = cookies.jwt;
   logger.info(`logout: refreshToken: ${JSON.stringify(refreshToken)}`);
 
@@ -122,10 +118,11 @@ export const logoutHandler = async (req: RequestWithCookie, res: Response) => {
   // res.header('Access-Control-Allow-Credentials', 'true') ;???
 
   res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: false });
+
   return res.sendStatus(204); // No content
 };
 
-export const refreshHandler = async (req: RequestWithCookie, res: Response) => {
+export const refreshHandler = async (req: Request, res: Response) => {
   const { cookies } = req;
 
   logger.info(`cookie: ${JSON.stringify(cookies)}`);
@@ -134,15 +131,9 @@ export const refreshHandler = async (req: RequestWithCookie, res: Response) => {
   }
 
   const refreshToken = cookies.jwt;
-  // res.clearCookie('jwt', {
-  //   httpOnly: true,
-  //   sameSite: 'none',
-  //   secure: false,
-  //   maxAge: 24 * 60 * 60 * 1000,
-  // });
   res.clearCookie('jwt');
 
-  const foundUser = await User.findOne({ refreshToken }); // add .exec() at the end?
+  const foundUser = await User.findOne<UserDocument>({ refreshToken }); // add .exec() at the end?
 
   if (!foundUser) {
     // token reuse detected! - cookie present but has already been deleted from db
@@ -173,11 +164,10 @@ export const refreshHandler = async (req: RequestWithCookie, res: Response) => {
       return res.sendStatus(403); // Forbidden
     }
 
-    // TODO: fix typings for id as string
     const userData = {
       email: foundUser.email, // tutorial just uses username
-      id: foundUser.id as string,
-      sub: foundUser.id as string,
+      id: foundUser.id,
+      sub: foundUser.id,
     };
 
     const accessToken = jwt.sign(userData, 'access-token-secret', {

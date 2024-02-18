@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import User, { UserDocument } from '../models/user.model';
 import logger from '../utils/logger';
-
-import User from '../models/user.model';
 
 export const authUser = async (
   req: Request,
@@ -20,15 +19,20 @@ export const authUser = async (
 
   logger.info(JSON.stringify(decoded));
 
-  // TODO: get / access custom data: email, id etc.
-  const user = await User.findOne({ _id: decoded.sub });
+  // TODO: get / access custom data: email, id etc. ?
+  const user = await User.findOne<UserDocument>({ _id: decoded.sub });
   if (!user) {
-    return res.sendStatus(400); // unsure of return code as jwt valid, but no matching user in db
+    return res.sendStatus(401); // unsure of return code as jwt valid, but no matching user in db
   }
 
-  // add user object to req / res cycle
-  res.locals.user = user?.toJSON();
+  // // if current user does not own requested users resource then return unautherized
+  // if (req.params.userId && req.params.userId !== user.id) {
+  //   return res.sendStatus(401);
+  // }
 
-  next();
+  // add ObjectId to req.user object
+  req.user = user;
+
+  return next();
 };
 
