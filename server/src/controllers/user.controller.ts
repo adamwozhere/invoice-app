@@ -1,12 +1,6 @@
 import { Request, Response } from 'express';
-import { createUser, getUsers } from '../services/userService';
+import { createUser } from '../services/user.service';
 import { CreateUserInput } from '../schemas/user.schema';
-
-// this should probably just get the current user
-export const getUsersHandler = async (_req: Request, res: Response) => {
-  const users = await getUsers();
-  return res.json(users);
-};
 
 export const createUserHandler = async (
   req: Request<object, object, CreateUserInput['body']>,
@@ -16,8 +10,4 @@ export const createUserHandler = async (
 
   return res.status(201).json(user);
 };
-
-// TODO: editUserHandler
-
-// TODO: deleteUserHandler
 

@@ -34,6 +34,6 @@ export const createUserSchema = z.object({
 
 export type CreateUserInput = Omit<
   TypeOf<typeof createUserSchema>,
-  'body.passowrdConfirmation'
+  'body.passwordConfirmation'
 >;
 

@@ -2,11 +2,6 @@ import bcrypt from 'bcrypt';
 import User from '../models/user.model';
 import { CreateUserInput } from '../schemas/user.schema';
 
-export const getUsers = async () => {
-  const users = await User.find({});
-  return users;
-};
-
 export const createUser = async (input: CreateUserInput['body']) => {
   const saltRounds = 10;
   const passwordHash = await bcrypt.hash(input.password, saltRounds);
@@ -20,3 +15,5 @@ export const createUser = async (input: CreateUserInput['body']) => {
   return user;
 };
 
+// Note: have createUser only, no edit or delete to make things simpler
+// just have user enter their address and bank details on the invoice

@@ -3,10 +3,9 @@ import dayjs from 'dayjs';
 import { UserDocument } from './user.model';
 // import User, { UserDocument } from './user.model';
 
-// TODO: check and investigate if my customer property should be ObjectId or string
-// the interface represents the Document as it is in mongoose,
-// however when creating an invoice and adding a customer it is passed as a string.
-// check if providing string to a ObjectId is compatible
+// TODO: add user name, address and bank details,
+// originally thought these could come from User, but if bank / address details change,
+// then it would affect all previous invoices!
 
 /**
  * ITEM document
@@ -85,29 +84,6 @@ export type InvoiceInput = Pick<
   items: Array<ItemInput>;
 };
 
-// TODO: work out invoice numbering method
-/**
- * pre-save hook was working by post findOneAndDelete didn't give me access to this.user to get the counter,
- * also the unique field for the invoiceNumber was causing duplicate values - race condition in tests?
- * - may be better to just have invoice number non-unique, and either auto increment in model,
- * or have manual input into model, but pre/post save, update the user document with lastInvoiceNumber,
- * client can then use this to auto-increment and send by default (or user can edit it?)
- * - check how other apps handle invoice number sequencing!
- *
- * SAGE 50: sage invoicing assigns numbers at time of prinding or emailing them (also allows you to number emailed one differently from printed ones???)
- * they are sequentially incremented but you can also enter a number,
- * it will warn you if the number has been used
- *
- * easiest way probably is to have a lastInvoiceNumber set to default 0 on the User doc
- * client increments and sends in json,
- * model does pre/post save to user.lastInvoiceNumber
- * model has the invoice number as unique
- * hopefull the clientside useQuery will auto update the user data,
- * can always have extra stuff like virtual for user.totalInvoices etc.
- *
- * NOTE: will need to update zod schema for invoiceNumber, and do validation tests for these
- */
-
 const invoice = new Schema<InvoiceDocument>(
   {
     invoiceNumber: {
@@ -173,15 +149,6 @@ invoice.pre('save', async function (next) {
 
   next();
 });
-
-// invoice.post('findOneAndDelete', async function (doc: InvoiceDocument) {
-//   const counter = await Counters.findOne({ name: 'counter' });
-
-//   if (doc && counter && doc.invoiceNumber === counter?.current) {
-//     counter.current -= 1;
-//     await counter.save();
-//   }
-// });
 
 const Invoice = mongoose.model('Invoice', invoice);
 

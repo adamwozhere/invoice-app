@@ -5,7 +5,7 @@ import {
   editInvoiceById,
   getInvoices,
   getSingleInvoice,
-} from '../services/invoiceService';
+} from '../services/invoice.service';
 import {
   CreateInvoiceInput,
   DeleteInvoiceInput,

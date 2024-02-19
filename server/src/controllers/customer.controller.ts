@@ -6,7 +6,7 @@ import {
   editCustomerById,
   getCustomers,
   getSingleCustomer,
-} from '../services/customerService';
+} from '../services/customer.service';
 
 import {
   CreateCustomerInput,
