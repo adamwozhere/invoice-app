@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema, Types } from 'mongoose';
+import mongoose, { Document, PopulatedDoc, Schema, Types } from 'mongoose';
 import { InvoiceDocument } from './invoice.model';
 import { CustomerDocument } from './customer.model';
 
@@ -30,10 +30,10 @@ export interface UserDocument extends Document {
   // bank details?
   // invoices: Types.DocumentArray<PopulatedDoc<InvoiceDocument>>;
   // customers: Types.DocumentArray<PopulatedDoc<CustomerDocument>>;
-  invoices: Array<InvoiceDocument>;
-  customers: Array<CustomerDocument>;
+  invoices: Array<PopulatedDoc<InvoiceDocument>>;
+  customers: Array<PopulatedDoc<CustomerDocument>>;
   // totalInvoices: number;
-  latestInvoiceNumber: number;
+  invoiceCounter: number;
   refreshToken: Array<string>;
   id: string; // mongoose virtual: string version of ObjectId
   _id: Types.ObjectId; // ObjectId used for attaching user ID to req.user for auth middleware
@@ -92,9 +92,11 @@ const userSchema = new Schema<UserDocument>(
         ref: 'Customer',
       },
     ],
-    // totalInvoices: Number,
-    latestInvoiceNumber: { type: Number, default: 0 },
     refreshToken: [String],
+    invoiceCounter: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     toJSON: {
@@ -103,7 +105,7 @@ const userSchema = new Schema<UserDocument>(
         delete returned._id;
         delete returned.__v;
         delete returned.passwordHash;
-        // delete returned.refreshToken;
+        delete returned.refreshToken;
       },
     },
   }

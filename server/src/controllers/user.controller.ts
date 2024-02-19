@@ -17,7 +17,7 @@ export const createUserHandler = async (
   return res.status(201).json(user);
 };
 
-// TODO: deleteUserHandler
-
 // TODO: editUserHandler
+
+// TODO: deleteUserHandler
 

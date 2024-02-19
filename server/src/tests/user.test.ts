@@ -39,11 +39,9 @@ describe('user', () => {
         name: 'John Doe',
         email: 'john@doe.com',
         id: expect.stringMatching(/^[0-9a-f]{24}$/),
-        //id: expect.any(String),
         invoices: [],
         customers: [],
-        refreshToken: [],
-        latestInvoiceNumber: 0,
+        invoiceCounter: 0,
       });
     });
 

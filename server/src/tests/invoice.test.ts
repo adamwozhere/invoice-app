@@ -245,8 +245,6 @@ describe('invoice', () => {
       expect(res.body).toEqual(expect.objectContaining({ status: 'draft' }));
     });
 
-    // TODO: test: invoicing numbers!
-
     it('returns calculated fields: invoiceNumber', async () => {
       const res = await api
         .post('/api/invoices')
@@ -254,9 +252,7 @@ describe('invoice', () => {
         .send(invoice)
         .expect(201);
 
-      expect(res.body).toEqual(
-        expect.objectContaining({ invoiceNumber: expect.any(Number) })
-      );
+      expect(res.body).toEqual(expect.objectContaining({ invoiceNumber: 5 }));
     });
 
     it('returns calculated fields: populated customer', async () => {

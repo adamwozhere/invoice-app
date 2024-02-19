@@ -1,5 +1,6 @@
 import mongoose, { Schema, Types } from 'mongoose';
 import dayjs from 'dayjs';
+import { UserDocument } from './user.model';
 // import User, { UserDocument } from './user.model';
 
 // TODO: check and investigate if my customer property should be ObjectId or string
@@ -111,7 +112,7 @@ const invoice = new Schema<InvoiceDocument>(
   {
     invoiceNumber: {
       type: Number,
-      // unique: true,
+      required: true,
       default: 0,
     },
     date: {
@@ -141,7 +142,6 @@ const invoice = new Schema<InvoiceDocument>(
       required: true,
     },
   },
-
   {
     toJSON: {
       virtuals: true,
@@ -163,26 +163,16 @@ invoice.virtual('due').get(function () {
   return dayjs(date).add(days, 'days').toDate();
 });
 
-// invoice.pre('save', async function (next) {
-//   const user = await User.findByIdAndUpdate<UserDocument>(
-//     this.user,
-//     { $inc: { latestInvoiceNumber: 1 } },
-//     { returnDocument: 'after' }
-//   );
-//   // const nextNumber = await Counters.findOneAndUpdate(
-//   //   { name: 'counter' },
-//   //   { $inc: { current: 1 }, currentId: this.id as string },
-//   //   { returnDocument: 'after' }
-//   // );
-//   // if (!nextNumber) {
-//   //   throw Error('counter document undefined');
-//   // }
+invoice.pre('save', async function (next) {
+  const user = await this.model('User').findByIdAndUpdate<UserDocument>(
+    this.user,
+    { $inc: { invoiceCounter: 1 } },
+    { returnDocument: 'after' }
+  );
+  this.invoiceNumber = user?.invoiceCounter ?? 0;
 
-//   // this.invoiceNumber = nextNumber.current;
-
-//   this.invoiceNumber = user?.latestInvoiceNumber ?? 0;
-//   next();
-// });
+  next();
+});
 
 // invoice.post('findOneAndDelete', async function (doc: InvoiceDocument) {
 //   const counter = await Counters.findOne({ name: 'counter' });
