@@ -9,7 +9,7 @@ export const createUser = async (input: CreateUserInput['body']) => {
   const user = await User.create({
     name: input.name,
     email: input.email,
-    password: passwordHash,
+    passwordHash,
   });
 
   return user;
@@ -17,3 +17,4 @@ export const createUser = async (input: CreateUserInput['body']) => {
 
 // Note: have createUser only, no edit or delete to make things simpler
 // just have user enter their address and bank details on the invoice
+

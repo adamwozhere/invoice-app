@@ -34,16 +34,21 @@ export const getSingleCustomer = async (
 // (although the mongoose Document methods and properties are actually on the object)
 // however I can't seem to do this for the create function as it still returns it as a Document type with the Interface
 // but perhaps I don't need to type these and just use the inferred values, now that I am typing the Models correctly with the interface
-export const createCustomer = async (data: CustomerInput) => {
+export const createCustomer = async (
+  user: UserDocument,
+  data: CustomerInput
+) => {
   // const customer = new Customer(data);
   // await customer.save();
   // return customer;
   const customer = await Customer.create<CustomerInput>(data);
+  user.customers = user.customers.concat(customer._id);
+  await user.save();
+
   return customer;
 };
 
 export const deleteCustomerById = async (user: UserDocument, id: string) => {
-  user.customers;
   const foundCustomer = user.customers.find((c) => c?.toString() === id);
   if (!foundCustomer) {
     return null;
@@ -52,6 +57,10 @@ export const deleteCustomerById = async (user: UserDocument, id: string) => {
   const deleted = await Customer.findOneAndDelete<CustomerDocument>({
     _id: id,
   });
+
+  // remove customer from user.customers
+  user.customers = user.customers.filter((c) => c?.toString() !== id);
+  await user.save();
 
   return deleted;
 };

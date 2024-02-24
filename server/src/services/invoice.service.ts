@@ -18,8 +18,9 @@ export const getInvoices = async (user: UserDocument | undefined) => {
   // const invoice = await Invoice.find({}).populate<{
   //   customer: CustomerDocument;
   // }>('customer');
-
+  console.log('getInvoices, user:', user?.id);
   const populated = await user?.populate('invoices');
+  console.log('populated: ', JSON.stringify(populated));
   return populated?.invoices;
 };
 
@@ -35,8 +36,11 @@ export const getSingleInvoice = async (
   return populated?.invoices[0];
 };
 
-export const createInvoice = async (data: InvoiceInput) => {
+export const createInvoice = async (user: UserDocument, data: InvoiceInput) => {
   const invoice = await Invoice.create(data);
+  user.invoices = user.invoices.concat(invoice._id);
+  await user.save();
+
   return invoice.populate('customer');
 };
 
@@ -55,6 +59,10 @@ export const deleteInvoiceById = async (user: UserDocument, id: string) => {
   const deleted = await Invoice.findOneAndDelete<InvoiceDocument>({
     _id: id,
   });
+
+  // remove invoice form user.invoices
+  user.invoices = user.invoices.filter((i) => i?.toString() !== id);
+  await user.save();
 
   return deleted;
 };
