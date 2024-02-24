@@ -76,7 +76,7 @@ export const createCustomerHandler = async (
     ...req.body,
     user: user._id,
   };
-  const customer = await createCustomer(data);
+  const customer = await createCustomer(user, data);
   return res.status(201).json(customer);
 };
 

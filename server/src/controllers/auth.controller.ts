@@ -33,11 +33,13 @@ export const loginHandler = async (
   };
 
   const accessToken = jwt.sign(userData, 'access-token-secret', {
-    expiresIn: '30s',
+    // expiresIn: '30s',
+    expiresIn: '10m',
   });
 
   const newRefreshToken = jwt.sign(userData, 'refresh-token-secret', {
-    expiresIn: '5m',
+    // expiresIn: '5m',
+    expiresIn: '1y',
   });
 
   // get users refresh tokens array, and remove current token from cookie if cookie present

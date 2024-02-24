@@ -78,7 +78,10 @@ const userSchema = new Schema<UserDocument>(
       required: true,
       unique: true, // need to add mongoose-unique-validator
     },
-    passwordHash: String,
+    passwordHash: {
+      type: String,
+      required: true,
+    },
     address: addressSchema,
     invoices: [
       {
