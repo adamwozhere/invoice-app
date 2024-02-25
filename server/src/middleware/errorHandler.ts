@@ -1,6 +1,7 @@
 import { type ErrorRequestHandler } from 'express';
 import { z } from 'zod';
 import logger from '../utils/logger';
+import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 
 const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
   // TODO: error handling for 404 etc.
@@ -19,10 +20,21 @@ const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
       error: err,
       // error: err.flatten(),
     });
+  } else if (
+    err instanceof JsonWebTokenError ||
+    err instanceof TokenExpiredError
+  ) {
+    const error = err as Error & { statusCode?: number };
+    error.statusCode = 403;
+    error.message = 'going through errorHandler';
+
+    logger.error(`${error.statusCode} ${error.name} ${error.message}`);
+
+    return res.status(403).json({ message: err.message });
   } else if (err instanceof Error) {
     // not sure how this line works
     const error = err as Error & { statusCode?: number };
-    logger.error(`${error.name}\n${error.message}`);
+    logger.error(`${error.statusCode} ${error.name} ${error.message}`);
     return res.status(error.statusCode ?? 400).json({ message: err.message });
   }
 

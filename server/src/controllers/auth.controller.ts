@@ -34,7 +34,7 @@ export const loginHandler = async (
 
   const accessToken = jwt.sign(userData, 'access-token-secret', {
     // expiresIn: '30s',
-    expiresIn: '10m',
+    expiresIn: '30s',
   });
 
   const newRefreshToken = jwt.sign(userData, 'refresh-token-secret', {
@@ -64,7 +64,7 @@ export const loginHandler = async (
     }
 
     // clear cookie
-    res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: false });
+    res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: true });
   }
 
   user.refreshToken = [...newRefreshTokenArray, newRefreshToken];
@@ -76,7 +76,7 @@ export const loginHandler = async (
   res.cookie('jwt', newRefreshToken, {
     httpOnly: true,
     sameSite: 'none',
-    secure: false,
+    secure: true,
     maxAge: 24 * 60 * 60 * 1000,
   });
 
@@ -100,7 +100,7 @@ export const logoutHandler = async (req: Request, res: Response) => {
   // is refresh token in db ?
   const foundUser = await User.findOne({ refreshToken });
   if (!foundUser) {
-    res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: false });
+    res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: true });
     return res.sendStatus(204); // No content
   }
 
@@ -119,7 +119,7 @@ export const logoutHandler = async (req: Request, res: Response) => {
 
   // res.header('Access-Control-Allow-Credentials', 'true') ;???
 
-  res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: false });
+  res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: true });
 
   return res.sendStatus(204); // No content
 };
@@ -189,7 +189,7 @@ export const refreshHandler = async (req: Request, res: Response) => {
     res.cookie('jwt', newRefreshToken, {
       httpOnly: true,
       sameSite: 'none',
-      secure: false,
+      secure: true,
       maxAge: 24 * 60 * 60 * 1000,
     });
 
