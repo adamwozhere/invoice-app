@@ -135,6 +135,7 @@ export const refreshHandler = async (req: Request, res: Response) => {
   const refreshToken = cookies.jwt;
   res.clearCookie('jwt');
 
+  // try {
   const foundUser = await User.findOne<UserDocument>({ refreshToken }); // add .exec() at the end?
 
   if (!foundUser) {
@@ -158,49 +159,52 @@ export const refreshHandler = async (req: Request, res: Response) => {
     (t) => t !== refreshToken
   );
 
-  // evaluate jwt
-  try {
-    const decoded = jwt.verify(refreshToken, 'refresh-token-secret');
-    // should I be using jwt.sub here? - what do I actually need in the jwt? what can the front end actually use?
-    if (foundUser.id !== decoded.sub) {
-      return res.sendStatus(403); // Forbidden
-    }
-
-    const userData = {
-      email: foundUser.email, // tutorial just uses username
-      id: foundUser.id,
-      sub: foundUser.id,
-    };
-
-    const accessToken = jwt.sign(userData, 'access-token-secret', {
-      expiresIn: '30s',
-    });
-
-    const newRefreshToken = jwt.sign(userData, 'refresh-token-secret', {
-      expiresIn: '1y',
-    });
-
-    // save refresh token with current user
-    foundUser.refreshToken = [...newRefreshTokenArray, newRefreshToken];
-    const result = await foundUser.save();
-    logger.info(JSON.stringify(result));
-
-    // create new refreshToken cookie
-    res.cookie('jwt', newRefreshToken, {
-      httpOnly: true,
-      sameSite: 'none',
-      secure: true,
-      maxAge: 24 * 60 * 60 * 1000,
-    });
-
-    // send back access token and any other data (could send the user details etc?)
-    return res.json({ accessToken });
-  } catch (err) {
-    // remove token
-    logger.info('refresh token expired');
-    foundUser.refreshToken = [...newRefreshTokenArray];
-    const result = await foundUser.save();
-    logger.info(JSON.stringify(result));
+  const decoded = jwt.verify(refreshToken, 'refresh-token-secret');
+  // should I be using jwt.sub here? - what do I actually need in the jwt? what can the front end actually use?
+  if (foundUser.id !== decoded.sub) {
+    return res.sendStatus(403); // Forbidden
   }
+
+  const userData = {
+    email: foundUser.email, // tutorial just uses username
+    id: foundUser.id,
+    sub: foundUser.id,
+  };
+
+  const accessToken = jwt.sign(userData, 'access-token-secret', {
+    expiresIn: '30s',
+  });
+
+  const newRefreshToken = jwt.sign(
+    { userData, nonce: Math.random().toString().substring(7) },
+    'refresh-token-secret',
+    {
+      expiresIn: '1y',
+    }
+  );
+
+  // save refresh token with current user
+  foundUser.refreshToken = [...newRefreshTokenArray, newRefreshToken];
+  const result = await foundUser.save();
+  logger.info(JSON.stringify(result));
+
+  // create new refreshToken cookie
+  res.cookie('jwt', newRefreshToken, {
+    httpOnly: true,
+    sameSite: 'none',
+    secure: true,
+    maxAge: 24 * 60 * 60 * 1000,
+  });
+
+  // send back access token and any other data (could send the user details etc?)
+  return res.json({ accessToken });
+  // } catch (err) {
+  // // remove token
+  // logger.info('refresh token expired');
+  // foundUser.refreshToken = [...newRefreshTokenArray];
+  // const result = await foundUser.save();
+  // logger.info(JSON.stringify(result));
+  // return res.status(403).json({ message: 'error' });
+  // }
 };
 

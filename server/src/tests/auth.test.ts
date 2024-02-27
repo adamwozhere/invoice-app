@@ -105,7 +105,7 @@ describe('auth', () => {
       const res = await api
         .get('/api/invoices')
         .set('Authorization', `Bearer ${expiredAccessToken}`)
-        .expect(400);
+        .expect(403);
 
       expect(res.body).toEqual({ message: 'jwt expired' });
     });
@@ -199,7 +199,7 @@ describe('auth', () => {
       expect(res.get('Set-Cookie')).toBeDefined();
     });
 
-    it('request with expired refresh cookie errors: 401', async () => {
+    it('request with expired refresh cookie errors: 403', async () => {
       const expiredRefreshToken = jwt.sign(userData, 'refresh-token-secret', {
         expiresIn: '0s',
       });
@@ -207,7 +207,7 @@ describe('auth', () => {
       const res = await api
         .get('/auth/refresh')
         .set('Cookie', expiredRefreshCookie)
-        .expect(400);
+        .expect(403);
 
       expect(res.body).toEqual({ message: 'jwt expired' });
     });
@@ -253,7 +253,7 @@ describe('auth', () => {
 
       // set-cookie header should contain an 'empty jwt cookie' to delete the cookie
       expect(res.get('Set-Cookie')).toEqual([
-        'jwt=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=None',
+        'jwt=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=None',
       ]);
     });
   });

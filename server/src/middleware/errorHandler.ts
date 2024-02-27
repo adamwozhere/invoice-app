@@ -26,7 +26,6 @@ const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
   ) {
     const error = err as Error & { statusCode?: number };
     error.statusCode = 403;
-    error.message = 'going through errorHandler';
 
     logger.error(`${error.statusCode} ${error.name} ${error.message}`);
 
