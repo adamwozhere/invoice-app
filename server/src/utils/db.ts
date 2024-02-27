@@ -40,16 +40,6 @@ const testServer = {
     logger.info(`Connected to Mongo memory server: ${uri}`);
   },
 
-  reset: async () => {
-    if (process.env.NODE_ENV !== 'test') {
-      throw Error('Mongo memory server should be used in api testing only');
-    }
-    const collections = Object.values(mongoose.connection.collections);
-    for (const collection of collections) {
-      await collection.drop();
-    }
-  },
-
   stop: async () => {
     if (process.env.NODE_ENV !== 'test') {
       throw Error('Mongo memory server should be used in api testing only');
@@ -57,11 +47,10 @@ const testServer = {
     // stop mongo memeory server
     if (mongoServer) {
       await mongoServer.stop();
-      // await mongoose.connection.close();
-      // await mongoose.connection.destroy(); // close but prevents reconnecting to the connection
-      await mongoose.disconnect(); // runs close on all connections in parallel
+
+      // close all connections in parallel
+      await mongoose.disconnect();
       logger.info('Mongo memory server disconnected');
-      // or should it be mongoose.disconnect() ? (disconnect closes all connections in parallel - so this may not be a good idea for testing ?)
     }
   },
 };
