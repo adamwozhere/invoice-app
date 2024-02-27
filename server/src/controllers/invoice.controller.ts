@@ -52,7 +52,7 @@ export const createInvoiceHandler = async (
     // customer: new Types.ObjectId(body.customer),
     user: user.id,
   };
-  const invoice = await createInvoice(data);
+  const invoice = await createInvoice(user, data);
   return res.status(201).json(invoice);
 };
 
