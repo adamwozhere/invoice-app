@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import User, { UserDocument } from '../models/user.model';
 import logger from '../utils/logger';
+import config from '../utils/config';
 
 export const authUser = async (
   req: Request,
@@ -15,7 +16,7 @@ export const authUser = async (
 
   logger.info(authHeader);
   const token = authHeader.replace(/^Bearer\s/, '');
-  const decoded = jwt.verify(token, 'access-token-secret');
+  const decoded = jwt.verify(token, config.ACCESS_TOKEN_SECRET);
 
   logger.info(JSON.stringify(decoded));
 

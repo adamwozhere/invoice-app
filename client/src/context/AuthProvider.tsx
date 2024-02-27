@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { ReactNode, createContext, useEffect, useState } from 'react';
 
 export interface AuthContextType {
@@ -26,12 +26,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // augment axios requests to add bearer token
   useEffect(() => {
+    const controller = new AbortController();
+
     const requestInterceptor = axios.interceptors.request.use(
-      (config) => {
+      (config: InternalAxiosRequestConfig & { sent?: boolean }) => {
+        if (config.sent) {
+          console.log('aborting request');
+          controller.abort();
+        }
+
         if (auth && auth.accessToken) {
           config.headers.Authorization = `Bearer ${auth.accessToken}`;
         }
-        return config;
+        return { ...config, signal: controller.signal };
       },
       (error) => {
         return Promise.reject(error);
@@ -43,13 +50,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       (res) => res,
       // status codes outside 2xx range trigger error function
       async (error: AxiosError) => {
-        const prevReq = error.config;
+        if (!error.config) {
+          return Promise.reject(error);
+        }
+        const prevReq: InternalAxiosRequestConfig & { sent?: boolean } =
+          error.config;
 
         console.log('interceptor response prevReq:', JSON.stringify(prevReq));
         console.log('interceptor status', JSON.stringify(error));
 
-        if (prevReq && error.response?.status === 403) {
+        if (prevReq && error.response?.status === 403 && !prevReq.sent) {
           console.log('refreshing token');
+          prevReq.sent = true;
           const { data } = await axios.get<{ accessToken: string }>(
             '/auth/refresh',
             { withCredentials: true }
@@ -63,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }));
 
           prevReq.headers.Authorization = `Bearer ${data.accessToken}`;
-          return axios.request(prevReq);
+          return Promise.resolve(axios(prevReq));
         }
         return Promise.reject(error);
       }

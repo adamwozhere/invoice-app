@@ -7,6 +7,7 @@ import app from '../app';
 import Customer from '../models/customer.model';
 import jwt from 'jsonwebtoken';
 import { omit } from 'lodash';
+import config from '../utils/config';
 
 const api = supertest(app);
 
@@ -141,7 +142,7 @@ describe('customer', () => {
           id: '123456',
           sum: '123456',
         },
-        'access-token-secret',
+        config.ACCESS_TOKEN_SECRET,
         { expiresIn: '1d' }
       );
 

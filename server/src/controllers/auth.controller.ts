@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import logger from '../utils/logger';
 import User, { UserDocument } from '../models/user.model';
+import config from '../utils/config';
 
 // TODO: proper config for getting the jwt secrets from env vars. keeping them typed etc, and the jwt.sub ? or use jwt.id ?
 // TODO: jwt / cookie options object for being able to change secure cookies on and off for dev/test or production
@@ -32,15 +33,19 @@ export const loginHandler = async (
     sub: user.id,
   };
 
-  const accessToken = jwt.sign(userData, 'access-token-secret', {
+  const accessToken = jwt.sign(userData, config.ACCESS_TOKEN_SECRET, {
     // expiresIn: '30s',
-    expiresIn: '30s',
+    expiresIn: config.ACCESS_TOKEN_TTL,
   });
 
-  const newRefreshToken = jwt.sign(userData, 'refresh-token-secret', {
-    // expiresIn: '5m',
-    expiresIn: '1y',
-  });
+  const newRefreshToken = jwt.sign(
+    { ...userData, nonce: Math.random().toString().substring(7) },
+    config.REFRESH_TOKEN_SECRET,
+    {
+      // expiresIn: '5m',
+      expiresIn: config.REFRESH_TOKEN_TTL,
+    }
+  );
 
   // get users refresh tokens array, and remove current token from cookie if cookie present
   let newRefreshTokenArray = cookies?.jwt
@@ -64,7 +69,7 @@ export const loginHandler = async (
     }
 
     // clear cookie
-    res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: true });
+    res.clearCookie('jwt');
   }
 
   user.refreshToken = [...newRefreshTokenArray, newRefreshToken];
@@ -73,12 +78,7 @@ export const loginHandler = async (
   const result = await user.save();
   logger.info(JSON.stringify(result));
 
-  res.cookie('jwt', newRefreshToken, {
-    httpOnly: true,
-    sameSite: 'none',
-    secure: true,
-    maxAge: 24 * 60 * 60 * 1000,
-  });
+  res.cookie('jwt', newRefreshToken, config.COOKIE_OPTIONS);
 
   return res.json({ accessToken, email: user.email });
 };
@@ -100,7 +100,7 @@ export const logoutHandler = async (req: Request, res: Response) => {
   // is refresh token in db ?
   const foundUser = await User.findOne({ refreshToken });
   if (!foundUser) {
-    res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: true });
+    res.clearCookie('jwt');
     return res.sendStatus(204); // No content
   }
 
@@ -119,7 +119,7 @@ export const logoutHandler = async (req: Request, res: Response) => {
 
   // res.header('Access-Control-Allow-Credentials', 'true') ;???
 
-  res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: true });
+  res.clearCookie('jwt');
 
   return res.sendStatus(204); // No content
 };
@@ -143,8 +143,8 @@ export const refreshHandler = async (req: Request, res: Response) => {
     // only applies if storing multiple tokens in an array e.g. multiple devices
 
     // if so, decode the token to get user, and delete ALL user refresh tokens
-    const decoded = jwt.verify(refreshToken, 'refresh-token-secret');
-    logger.info('attempted refresh token reuse');
+    const decoded = jwt.verify(refreshToken, config.REFRESH_TOKEN_SECRET);
+    logger.error(`attempted refresh token reuse, token: ${refreshToken}`);
     const userFromToken = await User.findOne({ _id: decoded.sub });
 
     userFromToken!.refreshToken = [];
@@ -159,8 +159,10 @@ export const refreshHandler = async (req: Request, res: Response) => {
     (t) => t !== refreshToken
   );
 
-  const decoded = jwt.verify(refreshToken, 'refresh-token-secret');
+  const decoded = jwt.verify(refreshToken, config.REFRESH_TOKEN_SECRET);
   // should I be using jwt.sub here? - what do I actually need in the jwt? what can the front end actually use?
+
+  // this should never happen?
   if (foundUser.id !== decoded.sub) {
     return res.sendStatus(403); // Forbidden
   }
@@ -171,15 +173,15 @@ export const refreshHandler = async (req: Request, res: Response) => {
     sub: foundUser.id,
   };
 
-  const accessToken = jwt.sign(userData, 'access-token-secret', {
-    expiresIn: '30s',
+  const accessToken = jwt.sign(userData, config.ACCESS_TOKEN_SECRET, {
+    expiresIn: config.ACCESS_TOKEN_TTL,
   });
 
   const newRefreshToken = jwt.sign(
-    { userData, nonce: Math.random().toString().substring(7) },
-    'refresh-token-secret',
+    { ...userData, nonce: Math.random().toString().substring(7) },
+    config.REFRESH_TOKEN_SECRET,
     {
-      expiresIn: '1y',
+      expiresIn: config.REFRESH_TOKEN_TTL,
     }
   );
 
@@ -189,12 +191,7 @@ export const refreshHandler = async (req: Request, res: Response) => {
   logger.info(JSON.stringify(result));
 
   // create new refreshToken cookie
-  res.cookie('jwt', newRefreshToken, {
-    httpOnly: true,
-    sameSite: 'none',
-    secure: true,
-    maxAge: 24 * 60 * 60 * 1000,
-  });
+  res.cookie('jwt', newRefreshToken, config.COOKIE_OPTIONS);
 
   // send back access token and any other data (could send the user details etc?)
   return res.json({ accessToken });

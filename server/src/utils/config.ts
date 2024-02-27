@@ -10,7 +10,7 @@ const dotEnvSchema = z.object({
 });
 
 const FRONTEND_PATH = '../client/dist';
-const ACCESS_TOKEN_TTL = '10m'; // 10 mins
+const ACCESS_TOKEN_TTL = '30s'; // 10 mins
 const REFRESH_TOKEN_TTL = '1y'; // 1 year
 
 // refresh token cookie options
@@ -30,3 +30,4 @@ const config = {
 };
 
 export default config;
+

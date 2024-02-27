@@ -9,6 +9,7 @@ import db from '../utils/db';
 import app from '../app';
 import User from '../models/user.model';
 import jwt from 'jsonwebtoken';
+import config from '../utils/config';
 
 const api = supertest(app);
 
@@ -98,9 +99,13 @@ describe('auth', () => {
     });
 
     it('authenticated route cannot be accessed if access token has expired', async () => {
-      const expiredAccessToken = jwt.sign(userData, 'access-token-secret', {
-        expiresIn: '0s',
-      });
+      const expiredAccessToken = jwt.sign(
+        userData,
+        config.ACCESS_TOKEN_SECRET,
+        {
+          expiresIn: '0s',
+        }
+      );
 
       const res = await api
         .get('/api/invoices')
@@ -128,6 +133,7 @@ describe('auth', () => {
       // set refresh and access tokens for use in further tests
       // TODO: should this be done in beforeAll ?
       refreshCookie = res.get('Set-Cookie');
+      console.log('login - refreshCookie', refreshCookie);
       accessToken = res.body.accessToken;
 
       expect(res.get('Set-Cookie')).toBeDefined();
@@ -191,18 +197,30 @@ describe('auth', () => {
     });
 
     it('request with a valid refresh token can be issued a new one', async () => {
+      // login again to get valid refreshCookie
+      const newLogin = await api.post('/auth/login').send({
+        email: 'sherlock@baker-st.com',
+        password: 'Password123',
+      });
+
+      const newRefreshCookie = newLogin.get('Set-Cookie');
+
       const res = await api
         .get('/auth/refresh')
-        .set('Cookie', refreshCookie)
+        .set('Cookie', newRefreshCookie)
         .expect(200);
 
       expect(res.get('Set-Cookie')).toBeDefined();
     });
 
     it('request with expired refresh cookie errors: 403', async () => {
-      const expiredRefreshToken = jwt.sign(userData, 'refresh-token-secret', {
-        expiresIn: '0s',
-      });
+      const expiredRefreshToken = jwt.sign(
+        userData,
+        config.REFRESH_TOKEN_SECRET,
+        {
+          expiresIn: '0s',
+        }
+      );
       const expiredRefreshCookie = `jwt=${expiredRefreshToken}; Max-Age=0; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=None`;
       const res = await api
         .get('/auth/refresh')
@@ -253,7 +271,7 @@ describe('auth', () => {
 
       // set-cookie header should contain an 'empty jwt cookie' to delete the cookie
       expect(res.get('Set-Cookie')).toEqual([
-        'jwt=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=None',
+        'jwt=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT',
       ]);
     });
   });
