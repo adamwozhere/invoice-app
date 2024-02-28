@@ -10,7 +10,7 @@ const dotEnvSchema = z.object({
 });
 
 const FRONTEND_PATH = '../client/dist';
-const ACCESS_TOKEN_TTL = '30s'; // 10 mins
+const ACCESS_TOKEN_TTL = '15s'; // 10 mins
 const REFRESH_TOKEN_TTL = '1y'; // 1 year
 
 // refresh token cookie options
@@ -18,7 +18,8 @@ const COOKIE_OPTIONS = {
   httpOnly: true,
   sameSite: 'none' as const,
   secure: true, // set to false if testing with thunderclient
-  maxAge: 60 * 60 * 24 * 365, // 1 year
+  maxAge: 30000, // 30 sec
+  // maxAge: 60 * 60 * 24 * 365, // 1 year
 };
 
 const config = {
@@ -27,7 +28,7 @@ const config = {
   ACCESS_TOKEN_TTL,
   REFRESH_TOKEN_TTL,
   COOKIE_OPTIONS,
-};
+} as const;
 
 export default config;
 

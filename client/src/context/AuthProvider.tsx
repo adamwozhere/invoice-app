@@ -62,21 +62,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (prevReq && error.response?.status === 403 && !prevReq.sent) {
           console.log('refreshing token');
           prevReq.sent = true;
-          const { data } = await axios.get<{ accessToken: string }>(
-            '/auth/refresh',
-            { withCredentials: true }
-          );
 
-          console.log('/auth/refresh -> accessToken', data.accessToken);
-          setAuth((prev) => ({
-            email: prev!.email,
-            isAuthenticated: prev!.isAuthenticated,
-            accessToken: data.accessToken,
-          }));
+          try {
+            const { data } = await axios.get<{ accessToken: string }>(
+              '/auth/refresh',
+              { withCredentials: true }
+            );
 
-          prevReq.headers.Authorization = `Bearer ${data.accessToken}`;
-          return Promise.resolve(axios(prevReq));
+            setAuth((prev) => ({
+              email: prev!.email,
+              isAuthenticated: prev!.isAuthenticated,
+              accessToken: data?.accessToken,
+            }));
+            prevReq.headers.Authorization = `Bearer ${auth?.accessToken}`;
+            return axios.request(prevReq);
+          } catch (err) {
+            setAuth(null);
+            return Promise.reject(err);
+          }
         }
+        console.error('rejecting with error: ', error);
+
         return Promise.reject(error);
       }
     );
