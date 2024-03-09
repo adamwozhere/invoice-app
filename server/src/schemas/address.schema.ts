@@ -11,9 +11,9 @@ export const addressSchema = z.object(
           'Enter address line 1, typically the building and street',
       })
       .min(2),
-    line2: z.string().min(2).optional(),
+    line2: z.string().optional(),
     city: z.string({ required_error: 'Enter town or city' }).min(2),
-    county: z.string().min(2).optional(),
+    county: z.string().optional(),
     postcode: z
       .string({ required_error: 'Enter postcode' })
       .regex(postcodeRegex, 'Enter a valid postcode'),

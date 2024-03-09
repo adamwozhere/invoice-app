@@ -18,8 +18,8 @@ const COOKIE_OPTIONS = {
   httpOnly: true,
   sameSite: 'none' as const,
   secure: true, // set to false if testing with thunderclient
-  maxAge: 30000, // 30 sec
-  // maxAge: 60 * 60 * 24 * 365, // 1 year
+  // maxAge: 30000, // 30 sec
+  maxAge: 60 * 60 * 24 * 365, // 1 year
 };
 
 const config = {

@@ -1,48 +1,74 @@
-import { RouterProvider, createRouter } from '@tanstack/react-router';
-import { routeTree } from './routeTree.gen';
-
-// providers and hooks
-import { AuthProvider } from './context/AuthProvider';
-import { useAuth } from './hooks/useAuth';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Route, Routes } from 'react-router-dom';
+// routes
+import AuthProvider from './providers/AuthProvider';
+import Layout from './layouts/Layout';
+import Index from './routes/Index';
+import Login from './routes/Login';
+import Invoices from './routes/Invoices';
+import Invoice from './routes/Invoice';
+import Customers from './routes/Customers';
+import RequireAuth from './layouts/RequireAuth';
+import EditInvoice from './routes/EditInvoice';
+import Customer from './routes/Customer';
+import EditCustomer from './routes/EditCustomer';
+import NewCustomer from './routes/NewCustomer';
 
-// create Query client
-const queryClient = new QueryClient();
+interface HttpError extends Error {
+  response?: {
+    status: number;
+  };
+}
 
-// create router instance
-const router = createRouter({
-  routeTree,
-  defaultPreload: 'intent',
-  defaultPreloadStaleTime: 0,
-  context: {
-    queryClient,
-    auth: undefined!, // this will be set after wrapping in an AuthProvider
+// create Query client - TODO: add the logic for not retrying on 403 - let axios handle it
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error: HttpError) => {
+        if (error.response?.status === 403) {
+          return false;
+        }
+        return failureCount <= 3;
+      },
+      // refetchOnMount: false,
+      // refetchOnReconnect: false,
+      // refetchOnWindowFocus: false,
+    },
   },
 });
 
-// register router instance for type safety
-declare module '@tanstack/react-router' {
-  interface Register {
-    router: typeof router;
-  }
-}
+// const queryClient = new QueryClient();
 
-// create app router with auth context
-// ( queryClient does not need to be added to context here as it is not a react hook,
-// it is declared outside the component and added directly to router instance )
-function Router() {
-  const auth = useAuth();
-  return <RouterProvider router={router} context={{ auth }} />;
-}
+// create router instance
 
 // main app component with providers
 export default function App() {
   return (
-    <AuthProvider>
-      <QueryClientProvider client={queryClient}>
-        <Router />
-      </QueryClientProvider>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            <Route element={<RequireAuth />}>
+              <Route path="/invoices" element={<Invoices />} />
+              <Route path="/invoices/:invoiceId" element={<Invoice />} />
+              <Route
+                path="/invoices/:invoiceId/edit"
+                element={<EditInvoice />}
+              />
+              <Route path="/customers" element={<Customers />} />
+              <Route path="/customers/new" element={<NewCustomer />} />
+              <Route path="/customers/:customerId" element={<Customer />} />
+              <Route
+                path="/customers/:customerId/edit"
+                element={<EditCustomer />}
+              />
+            </Route>
+          </Route>
+        </Routes>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
