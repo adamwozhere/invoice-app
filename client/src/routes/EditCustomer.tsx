@@ -1,15 +1,13 @@
-import { useQuery } from '@tanstack/react-query';
-import { getCustomer } from '../api/getCustomer';
+// import { useQuery } from '@tanstack/react-query';
+// import { getCustomer } from '../api/customers';
 import { useParams } from 'react-router-dom';
 import EditCustomerForm from '../components/EditCustomerForm';
+import { useCustomers } from '../hooks/useCustomers';
 
 export default function EditCustomer() {
   const { customerId } = useParams();
 
-  const { data, error, isLoading } = useQuery({
-    queryKey: ['customers', { customerId }],
-    queryFn: () => getCustomer(customerId),
-  });
+  const { data, error, isLoading } = useCustomers(customerId);
 
   if (error) {
     return <p>Something went wrong...</p>;

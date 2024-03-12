@@ -1,12 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
-import { getCustomers } from '../api/getCustomers';
 import { Link } from 'react-router-dom';
+import { useCustomers } from '../hooks/useCustomers';
 
 export default function Customers() {
-  const { data, error, isLoading } = useQuery({
-    queryKey: ['customers'],
-    queryFn: getCustomers,
-  });
+  const { data, error, isLoading } = useCustomers();
 
   if (error) {
     return <p>Something went wrong...</p>;
@@ -31,4 +27,3 @@ export default function Customers() {
     </div>
   );
 }
-

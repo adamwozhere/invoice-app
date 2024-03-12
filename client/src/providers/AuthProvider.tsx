@@ -1,7 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { createContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { refreshAccesstoken } from '../api/refreshAccessToken';
+import { loginUser, refreshAccessToken } from '../api/auth';
 
 interface AuthContextType {
   user: {
@@ -62,7 +62,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
             prevRequest.sent = true;
 
             try {
-              const token = await refreshAccesstoken();
+              const token = await refreshAccessToken();
 
               setUser((prev) => ({
                 email: prev?.email ?? '',
@@ -90,13 +90,10 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const res = await axios.post<{ email: string; accessToken: string }>(
-        '/auth/login',
-        { email, password }
-      );
+      const user = await loginUser(email, password);
       setUser({
-        email: res.data.email,
-        accessToken: res.data.accessToken,
+        email: user.email,
+        accessToken: user.accessToken,
         isAuthenticated: true,
       });
       navigate('/', { replace: true });

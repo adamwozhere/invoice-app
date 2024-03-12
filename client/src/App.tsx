@@ -1,4 +1,8 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  QueryCache,
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query';
 import { Route, Routes } from 'react-router-dom';
 // routes
 import AuthProvider from './providers/AuthProvider';
@@ -14,34 +18,37 @@ import Customer from './routes/Customer';
 import EditCustomer from './routes/EditCustomer';
 import NewCustomer from './routes/NewCustomer';
 
-interface HttpError extends Error {
-  response?: {
-    status: number;
-  };
-}
+import type { HttpError } from './types/HttpError';
 
-// create Query client - TODO: add the logic for not retrying on 403 - let axios handle it
+// create Query Client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: (failureCount, error: HttpError) => {
+        // never retry on 403,
+        // let auth refresh accessToken then retry
         if (error.response?.status === 403) {
           return false;
         }
-        return failureCount <= 3;
+        // otherwise retry twice
+        return failureCount <= 2;
       },
-      // refetchOnMount: false,
-      // refetchOnReconnect: false,
-      // refetchOnWindowFocus: false,
     },
   },
+  queryCache: new QueryCache({
+    onError: (error, query) => {
+      // only show an error if there is data in the cache,
+      // which indicates a failed background update
+      if (query.state.data !== undefined) {
+        // TODO: add code for toast error message here
+        console.log(`error: something went wrong: ${error.message}`);
+      }
+    },
+  }),
 });
 
-// const queryClient = new QueryClient();
-
-// create router instance
-
-// main app component with providers
+// TODO: add query dev tools
+// App routes
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>

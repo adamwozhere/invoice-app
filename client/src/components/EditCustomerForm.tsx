@@ -1,43 +1,43 @@
 import { useForm } from '@tanstack/react-form';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+// import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getCustomer } from '../api/getCustomer';
-import axios from 'axios';
+// import { getCustomer } from '../api/customers';
+import { useEditCustomer } from '../hooks/useEditCustomer';
+import type { Customer } from '../types/Customer';
+import { useCustomers } from '../hooks/useCustomers';
 
 export default function EditCustomerForm() {
   const { customerId } = useParams();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
-  const editCustomer = (value: object) => {
-    return axios
-      .put(`/api/customers/${customerId}`, { ...value })
-      .then((res) => res.data);
-  };
+  const mutation = useEditCustomer();
 
-  const mutation = useMutation({
-    mutationFn: editCustomer,
-    onSuccess: (data) => {
-      queryClient.setQueryData(['customers', data.id], data);
-      void queryClient.invalidateQueries({ queryKey: ['customers'] });
-    },
-  });
+  const custId = customerId ?? '';
 
-  const { data, error, isLoading } = useQuery({
-    queryKey: ['customers', { customerId }],
-    queryFn: () => getCustomer(customerId),
-  });
+  const { data: cust, error, isLoading } = useCustomers(customerId);
+
+  // TODO: fix problem where customer can be an array ?
+  const data = cust as Customer;
 
   const form = useForm({
     defaultValues: {
-      ...data,
+      name: data?.name ?? '',
+      email: data?.email ?? '',
+      address: {
+        line1: data?.address.line1 ?? '',
+        line2: data?.address.line2 ?? '',
+        city: data?.address.city ?? '',
+        county: data?.address.county ?? '',
+        postcode: data?.address.postcode ?? '',
+      },
+      // TODO: do I handle the id here?
+      id: data?.id ?? '',
     },
-    onSubmit: ({ value }) => {
-      const customer = mutation.mutate(
-        { ...value },
+    onSubmit: ({ value }: { value: Customer }) => {
+      mutation.mutate(
+        { customerId: custId, data: value },
         { onSuccess: () => navigate('/customers') }
       );
-      console.log('edited customer', customer);
     },
   });
 

@@ -1,14 +1,14 @@
-import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
-import { getInvoice } from '../api/getInvoice';
+import useInvoices from '../hooks/useInvoices';
 
 export default function Invoice() {
   const { invoiceId } = useParams();
 
-  const { data, error, isLoading } = useQuery({
-    queryKey: ['invoices', { invoiceId }],
-    queryFn: () => getInvoice(invoiceId),
-  });
+  // const { data, error, isLoading } = useQuery({
+  //   queryKey: ['invoices', { invoiceId }],
+  //   queryFn: () => getInvoice(invoiceId),
+  // });
+  const { data, error, isLoading } = useInvoices(invoiceId);
 
   if (error) {
     return <p>Something went wrong...</p>;

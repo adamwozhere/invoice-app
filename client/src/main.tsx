@@ -6,15 +6,11 @@ import App from './App';
 import './index.css';
 
 // render app
-const rootElement = document.getElementById('app')!;
-if (!rootElement.innerHTML) {
-  const root = ReactDOM.createRoot(rootElement);
-  root.render(
-    <StrictMode>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </StrictMode>
-  );
-}
+ReactDOM.createRoot(document.getElementById('app')!).render(
+  <StrictMode>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </StrictMode>
+);
 

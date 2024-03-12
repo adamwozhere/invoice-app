@@ -1,23 +1,12 @@
 import { useForm } from '@tanstack/react-form';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+
 import { useNavigate } from 'react-router-dom';
+import { useCreateCustomer } from '../hooks/useCreateCustomer';
 
 export default function NewCustomForm() {
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const createCustomer = (value: object) => {
-    return axios.post('/api/customers', { ...value }).then((res) => res.data);
-  };
 
-  const mutation = useMutation({
-    mutationFn: createCustomer,
-    onSuccess: (data) => {
-      queryClient.setQueryData(['customers', data.id], data);
-      void queryClient.invalidateQueries({ queryKey: ['customers'] });
-      navigate('/customers');
-    },
-  });
+  const { mutate: createCustomer } = useCreateCustomer();
 
   const form = useForm({
     defaultValues: {
@@ -35,14 +24,16 @@ export default function NewCustomForm() {
       // handle new customer
       console.log('submitted new customer with data', JSON.stringify(value));
 
-      // const customer = await axios.post('/api/customers', {
-      //   ...value,
-      // });
-      const customer = mutation.mutate(
+      createCustomer(
         { ...value },
-        { onSuccess: () => form.reset() }
+        {
+          onSuccess: (data) => {
+            console.log('created customer', data);
+            form.reset();
+            navigate('/customers');
+          },
+        }
       );
-      console.log('created customer', customer);
     },
   });
 
