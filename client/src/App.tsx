@@ -3,6 +3,7 @@ import {
   QueryClient,
   QueryClientProvider,
 } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Route, Routes } from 'react-router-dom';
 // routes
 import AuthProvider from './providers/AuthProvider';
@@ -19,6 +20,7 @@ import EditCustomer from './routes/EditCustomer';
 import NewCustomer from './routes/NewCustomer';
 
 import type { HttpError } from './types/HttpError';
+import NewInvoice from './routes/NewInvoice';
 
 // create Query Client
 const queryClient = new QueryClient({
@@ -59,6 +61,7 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route element={<RequireAuth />}>
               <Route path="/invoices" element={<Invoices />} />
+              <Route path="/invoices/new" element={<NewInvoice />} />
               <Route path="/invoices/:invoiceId" element={<Invoice />} />
               <Route
                 path="/invoices/:invoiceId/edit"
@@ -75,6 +78,7 @@ export default function App() {
           </Route>
         </Routes>
       </AuthProvider>
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
 }

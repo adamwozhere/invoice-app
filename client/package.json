@@ -12,13 +12,16 @@
   "dependencies": {
     "@tanstack/react-form": "^0.13.6",
     "@tanstack/react-query": "^5.22.2",
+    "@tanstack/react-query-devtools": "^5.28.4",
     "@tanstack/zod-form-adapter": "^0.13.7",
     "axios": "^1.6.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-hook-form": "^7.51.0",
     "react-router-dom": "^6.22.2"
   },
   "devDependencies": {
+    "@hookform/devtools": "^4.3.1",
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.2.15",
     "@typescript-eslint/eslint-plugin": "^6.10.0",

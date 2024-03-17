@@ -15,6 +15,7 @@ export default function Invoices() {
   return (
     <div>
       <h1>Invoices</h1>
+      <Link to="new">New invoice</Link>
       <ul>
         {data?.map((inv) => (
           <li key={inv.id}>
