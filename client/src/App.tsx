@@ -21,6 +21,8 @@ import NewCustomer from './routes/NewCustomer';
 
 import type { HttpError } from './types/HttpError';
 import NewInvoice from './routes/NewInvoice';
+import Error from './routes/Error';
+import NotFound from './routes/NotFound';
 
 // create Query Client
 const queryClient = new QueryClient({
@@ -48,15 +50,14 @@ const queryClient = new QueryClient({
     },
   }),
 });
-
-// TODO: add query dev tools
+// TODO: error route
 // App routes
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Routes>
-          <Route element={<Layout />}>
+          <Route element={<Layout />} errorElement={<Error />}>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route element={<RequireAuth />}>
@@ -75,6 +76,7 @@ export default function App() {
                 element={<EditCustomer />}
               />
             </Route>
+            <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
       </AuthProvider>

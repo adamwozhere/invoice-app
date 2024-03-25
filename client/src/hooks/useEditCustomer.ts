@@ -7,17 +7,17 @@ export function useEditCustomer() {
 
   return useMutation({
     mutationFn: ({
+      // TODO: do I need to provide customerId ?
       customerId,
       data,
     }: {
       customerId: string;
       data: Customer;
     }) => editCustomer(customerId, data),
-    onSuccess: (customerId) => {
+    onSuccess: (customer) => {
       // TODO: use void or return?
       return queryClient.invalidateQueries({
-        // TODO: do I need to provide customerId ?
-        queryKey: ['customers', customerId],
+        queryKey: ['customers', customer.id],
       });
     },
   });

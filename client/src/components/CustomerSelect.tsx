@@ -1,20 +1,25 @@
 import type {
+  FieldErrors,
   UseFormGetValues,
   UseFormRegister,
   UseFormReset,
   UseFormSetValue,
 } from 'react-hook-form';
 import { Customer } from '../types/Customer';
-import { FormValues } from './InvoiceForm';
+
 import { useCreateCustomer } from '../hooks/useCreateCustomer';
+import { FormInput } from './ui/FormInput';
+import Button from './ui/Button';
+import { InvoiceInput } from '../schemas/invoice.schema';
 
 type Props = {
   customers: Customer[];
   selected: string;
-  register: UseFormRegister<FormValues>;
-  getValues: UseFormGetValues<FormValues>;
-  setValue: UseFormSetValue<FormValues>;
-  reset: UseFormReset<FormValues>;
+  register: UseFormRegister<InvoiceInput>;
+  getValues: UseFormGetValues<InvoiceInput>;
+  setValue: UseFormSetValue<InvoiceInput>;
+  reset: UseFormReset<InvoiceInput>;
+  errors: FieldErrors<InvoiceInput>;
 };
 
 export default function CustomerSelect({
@@ -24,6 +29,7 @@ export default function CustomerSelect({
   getValues,
   setValue,
   reset,
+  errors,
 }: Props) {
   const { mutate } = useCreateCustomer();
 
@@ -68,8 +74,14 @@ export default function CustomerSelect({
 
   return (
     <div>
-      <label htmlFor="customer">Customer</label>
-      <select id="customer" {...register('customer')}>
+      <label htmlFor="customer" className="text-sm font-bold block">
+        Customer
+      </label>
+      <select
+        id="customer"
+        className="appearance-none flex h-9 w-full bg-slate-300 px-3 py-1 pr-8 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed"
+        {...register('customer')}
+      >
         <option value="">-select customer-</option>
         {customers?.map((cust) => (
           <option key={cust.id} value={cust.id}>
@@ -78,60 +90,48 @@ export default function CustomerSelect({
         ))}
         <option value="new">-new customer-</option>
       </select>
+      <span role="alert" className="text-red-600 text-xs font-bold">
+        {errors && errors.customer?.message}
+      </span>
       {selected === 'new' ? (
-        <div>
-          <div>
-            <label htmlFor="name">Name</label>
-            <input id="name" type="text" {...register('newCustomer.name')} />
-          </div>
-          <div>
-            <label htmlFor="email">Email</label>
-            <input id="email" type="email" {...register('newCustomer.email')} />
-          </div>
-          <div>
-            <label>Address</label>
-            <div>
-              <label htmlFor="line1">Line 1</label>
-              <input
-                id="line1"
-                type="text"
-                {...register('newCustomer.address.line1')}
-              />
-            </div>
-            <div>
-              <label htmlFor="line2">Line 2</label>
-              <input
-                id="line2"
-                type="text"
-                {...register('newCustomer.address.line2')}
-              />
-            </div>
-            <div>
-              <label htmlFor="city">Town / City</label>
-              <input
-                id="city"
-                type="text"
-                {...register('newCustomer.address.city')}
-              />
-            </div>
-            <div>
-              <label htmlFor="county">County</label>
-              <input
-                id="county"
-                type="text"
-                {...register('newCustomer.address.county')}
-              />
-            </div>
-            <div>
-              <label htmlFor="postcodey">Postcode</label>
-              <input
-                id="postcode"
-                type="text"
-                {...register('newCustomer.address.postcode')}
-              />
-            </div>
-          </div>
-          <button onClick={createCustomer}>Create customer</button>
+        <div className="mt-4">
+          <FormInput
+            label="Name"
+            {...register('newCustomer.name')}
+            error={errors.newCustomer?.name}
+          />
+          <FormInput
+            label="Email"
+            type="email"
+            {...register('newCustomer.email')}
+            error={errors.newCustomer?.email}
+          />
+          <FormInput
+            label="Address line 1"
+            {...register('newCustomer.address.line1')}
+            error={errors.newCustomer?.address?.line1}
+          />
+          <FormInput
+            label="Address line 2 (optional)"
+            {...register('newCustomer.address.line2')}
+            error={errors.newCustomer?.address?.line2}
+          />
+          <FormInput
+            label="City"
+            {...register('newCustomer.address.city')}
+            error={errors.newCustomer?.address?.city}
+          />
+          <FormInput
+            label="County (optional)"
+            {...register('newCustomer.address.county')}
+            error={errors.newCustomer?.address?.county}
+          />
+          <FormInput
+            label="Postcode"
+            {...register('newCustomer.address.postcode')}
+            error={errors.newCustomer?.address?.postcode}
+          />
+          <Button onClick={createCustomer} label="Add customer" />
         </div>
       ) : null}
     </div>

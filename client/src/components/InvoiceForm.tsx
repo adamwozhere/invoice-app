@@ -3,6 +3,16 @@ import { useFieldArray, useForm } from 'react-hook-form';
 import { useCustomers } from '../hooks/useCustomers';
 import CustomerSelect from './CustomerSelect';
 import { Customer } from '../types/Customer';
+import { FormInput } from './ui/FormInput';
+import Button from './ui/Button';
+import {
+  InvoiceDraft,
+  InvoiceInput,
+  invoiceSchema,
+} from '../schemas/invoice.schema';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useCreateInvoice } from '../hooks/useCreateInvoice';
+import { useNavigate } from 'react-router-dom';
 
 // TODO: note on react-hook-form void returns for attributes:
 /**
@@ -23,30 +33,32 @@ import { Customer } from '../types/Customer';
  * also note that another rule I added in eslint for children render prop may not be needed now, as I'm not using TanStack Form
  */
 
-export type FormValues = {
-  paymentTerms: number;
-  customer: string;
-  items: {
-    description: string;
-    quantity: number;
-    amount: number;
-  }[];
-  newCustomer?: {
-    name: string;
-    email: string;
-    address: {
-      line1: string;
-      line2?: string;
-      city: string;
-      county?: string;
-      postcode: string;
-    };
-  };
-};
+// export type FormValues = {
+//   date: Date;
+//   paymentTerms: number;
+//   customer: string;
+//   items: {
+//     description: string;
+//     quantity: number;
+//     amount: number;
+//   }[];
+//   newCustomer?: {
+//     name: string;
+//     email: string;
+//     address: {
+//       line1: string;
+//       line2?: string;
+//       city: string;
+//       county?: string;
+//       postcode: string;
+//     };
+//   };
+// };
 
 export default function InvoiceForm() {
+  const navigate = useNavigate();
   const { data: customers } = useCustomers();
-
+  const { mutate: createInvoice } = useCreateInvoice();
   const {
     register,
     control,
@@ -56,11 +68,13 @@ export default function InvoiceForm() {
     getValues,
     setValue,
     reset,
-  } = useForm<FormValues>({
+  } = useForm<InvoiceInput>({
+    resolver: zodResolver(invoiceSchema),
     defaultValues: {
       paymentTerms: 28,
       customer: '',
-      items: [{ description: '', quantity: 1, amount: 0 }],
+      items: [{}],
+      status: 'draft',
     },
   });
 
@@ -72,27 +86,57 @@ export default function InvoiceForm() {
     control,
   });
 
-  const onSubmit = (data: FormValues) => {
+  const onSubmit = (data: InvoiceInput) => {
     console.log('onSubmit', data);
+    // TODO: save as draft ? - need to set status before this so that it goes through zodResolver
+    // will need to be a hidden form element?
+    data.status = 'pending';
+    createInvoice(data, {
+      onSuccess: () => {
+        reset();
+        navigate('/invoices');
+      },
+    });
+  };
+
+  const saveDraft = (event: React.SyntheticEvent) => {
+    event.preventDefault();
+    const data = formState;
+    console.log('saveDraft', data);
   };
 
   return (
-    <div>
+    <div className="w-full">
       <form
+        className="flex flex-col w-full"
         onSubmit={(event) => {
           event.preventDefault();
           void handleSubmit(onSubmit)(event);
         }}
       >
         <div>
-          <label htmlFor="paymentTerms">Payment terms (days)</label>
+          <label htmlFor="date">Invoice Date</label>
           <input
-            id="paymentTerms"
-            type="number"
-            {...register('paymentTerms')}
+            type="date"
+            id="date"
+            {...register('date', { valueAsDate: true })}
+            defaultValue={new Date().toISOString().substring(0, 10)}
           />
-          <p>{errors.paymentTerms?.message}</p>
         </div>
+
+        <input
+          hidden
+          disabled
+          aria-disabled
+          type="text"
+          {...register('status')}
+        />
+
+        <FormInput
+          label="Payment terms (days)"
+          error={errors.paymentTerms}
+          {...register('paymentTerms')}
+        />
 
         <CustomerSelect
           customers={customers as Customer[]}
@@ -101,54 +145,70 @@ export default function InvoiceForm() {
           getValues={getValues}
           setValue={setValue}
           reset={reset}
+          errors={errors}
         />
 
-        <div>
-          <label>Items</label>
+        <div className="mt-8 w-full">
+          <div className="flex gap-4 text-sm font-bold">
+            <label id="labelQuantity" className="w-1/5">
+              Quantity
+            </label>
+            <label id="labelDescription" className="w-3/5">
+              Item description
+            </label>
+            <label id="labelAmount" className="w-1/5">
+              Unit Price (£)
+            </label>
+          </div>
           <div>
             {fields.map((field, index) => {
               return (
-                <div key={field.id}>
-                  <label htmlFor={field.id}>Description</label>
-                  <input
-                    type="text"
-                    {...register(`items.${index}.description` as const)}
-                  />
-                  <label htmlFor="">Quantity</label>
-                  <input
-                    type="number"
+                <div key={field.id} className="flex gap-4">
+                  <FormInput
+                    className="w-1/5"
                     {...register(`items.${index}.quantity` as const)}
+                    aria-describedby="labelQuantity"
+                    placeholder="1"
+                    error={errors.items && errors.items[index]?.quantity}
                   />
-                  <label htmlFor="">Amount</label>
-                  <input
-                    type="number"
+                  <FormInput
+                    className="w-3/5"
+                    {...register(`items.${index}.description` as const)}
+                    aria-describedby="labelDescription"
+                    placeholder="Item"
+                    error={errors.items && errors.items[index]?.description}
+                  />
+                  <FormInput
+                    className="w-1/5"
                     {...register(`items.${index}.amount` as const)}
+                    placeholder="100"
+                    aria-describedby="labelAmount"
+                    error={errors.items && errors.items[index]?.amount}
                   />
-                  {index > 0 ? (
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        remove(index);
-                      }}
-                    >
-                      Remove
-                    </button>
-                  ) : null}
+                  <div>{field.amount * field.quantity}</div>
+                  <Button
+                    label="x"
+                    aria-label="Remove item"
+                    disabled={index === 0}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      remove(index);
+                    }}
+                  />
                 </div>
               );
             })}
-            <button
+            <Button
+              label="Add item"
               onClick={(e) => {
                 e.preventDefault();
-                append({ description: '', quantity: 1, amount: 0 });
+                append({} as InvoiceInput['items']);
               }}
-            >
-              Add item
-            </button>
+            />
           </div>
         </div>
-
-        <button type="submit">Submit</button>
+        <Button onClick={saveDraft} label="Save draft" />
+        <Button type="submit" label="Create invoice" />
       </form>
       <DevTool control={control} />
       <pre>{JSON.stringify(customers, null, 2)}</pre>

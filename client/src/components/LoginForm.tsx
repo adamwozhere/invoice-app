@@ -1,64 +1,44 @@
-import { useForm } from '@tanstack/react-form';
+import { useForm } from 'react-hook-form';
 import { useAuth } from '../hooks/useAuth';
+import { FormInput } from './ui/FormInput';
+import Button from './ui/Button';
+import { LoginInput, loginSchema } from '../schemas/login.schema';
+import { zodResolver } from '@hookform/resolvers/zod';
 
-function LoginForm() {
-  const { login } = useAuth();
-  const form = useForm({
-    defaultValues: {
-      email: '',
-      password: '',
-    },
-    onSubmit: async ({ value }) => {
-      const { email, password } = value;
-
-      await login(email, password);
-    },
+export default function LoginForm() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
   });
+  const { login } = useAuth();
+
+  const onSubmit = async (data: LoginInput) => {
+    console.log('login', data);
+
+    await login(data.email, data.password);
+  };
+
   return (
-    <div>
-      <form.Provider>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            void form.handleSubmit();
-          }}
-        >
-          <div>
-            <label htmlFor="email">Email</label>
-            <form.Field
-              name="email"
-              children={(field) => (
-                <input
-                  id={field.name}
-                  name={field.name}
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-              )}
-            />
-            <label htmlFor="password">Password</label>
-            <form.Field
-              name="password"
-              children={(field) => (
-                <input
-                  type="password"
-                  id={field.name}
-                  name={field.name}
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-              )}
-            />
-          </div>
-          <button>Submit</button>
-        </form>
-      </form.Provider>
+    <div className="min-w-md bg-slate-50 p-8">
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          void handleSubmit(onSubmit)(event);
+        }}
+      >
+        <FormInput {...register('email')} label="Email" error={errors.email} />
+        <FormInput
+          {...register('password')}
+          label="Password"
+          type="password"
+          error={errors.password}
+        />
+        <Button label="Log in" type="submit" />
+      </form>
     </div>
   );
 }
-
-export default LoginForm;
 
