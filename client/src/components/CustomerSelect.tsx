@@ -22,6 +22,8 @@ type Props = {
   errors: FieldErrors<InvoiceInput>;
 };
 
+// TODO: make this into a forward ref component
+
 export default function CustomerSelect({
   customers,
   selected,

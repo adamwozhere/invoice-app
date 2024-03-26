@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { QueryFunctionContext } from '@tanstack/react-query';
 import type { Invoice } from '../types/Invoice';
-import { InvoiceInput } from '../schemas/invoice.schema';
+import { InvoiceDraft, InvoiceInput } from '../schemas/invoice.schema';
 
 // export async function getInvoice(invoiceId: string | undefined) {
 //   const res = await axios.get<object>(`/api/invoice/${invoiceId}`);
@@ -21,7 +21,7 @@ export async function getInvoices({
   return res.data;
 }
 
-export async function createInvoice(data: InvoiceInput) {
+export async function createInvoice(data: InvoiceInput | InvoiceDraft) {
   const res = await axios.post<Invoice>('/api/invoices', data);
   return res.data;
 }

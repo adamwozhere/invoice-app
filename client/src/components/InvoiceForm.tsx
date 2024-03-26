@@ -6,13 +6,16 @@ import { Customer } from '../types/Customer';
 import { FormInput } from './ui/FormInput';
 import Button from './ui/Button';
 import {
-  InvoiceDraft,
   InvoiceInput,
+  // draftSchema,
   invoiceSchema,
+  draftInvoiceSchema,
+  InvoiceDraft,
 } from '../schemas/invoice.schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCreateInvoice } from '../hooks/useCreateInvoice';
 import { useNavigate } from 'react-router-dom';
+import { ZodError } from 'zod';
 
 // TODO: note on react-hook-form void returns for attributes:
 /**
@@ -33,32 +36,66 @@ import { useNavigate } from 'react-router-dom';
  * also note that another rule I added in eslint for children render prop may not be needed now, as I'm not using TanStack Form
  */
 
-// export type FormValues = {
-//   date: Date;
-//   paymentTerms: number;
-//   customer: string;
-//   items: {
-//     description: string;
-//     quantity: number;
-//     amount: number;
-//   }[];
-//   newCustomer?: {
-//     name: string;
-//     email: string;
-//     address: {
-//       line1: string;
-//       line2?: string;
-//       city: string;
-//       county?: string;
-//       postcode: string;
-//     };
-//   };
-// };
-
 export default function InvoiceForm() {
   const navigate = useNavigate();
   const { data: customers } = useCustomers();
   const { mutate: createInvoice } = useCreateInvoice();
+
+  // TODO: look at how the zodResolver is constructed
+  const dynamicResolver = (values: InvoiceInput | InvoiceDraft) => {
+    const schema =
+      values.status === 'draft' ? draftInvoiceSchema : invoiceSchema;
+
+    console.log('parsing values:', values);
+
+    try {
+      const parsed = schema.parse(values);
+      console.log('parsed');
+      return {
+        values: parsed,
+        errors: {},
+      };
+    } catch (error) {
+      console.log('failed', error);
+      if (error instanceof ZodError) {
+        // const zodErrors = error.flatten();
+        const errors: Record<string, any> = {};
+
+        error.errors.forEach((err) => {
+          errors[err.path.join('.')] = {
+            type: 'validation',
+            message: err.message,
+          };
+        });
+
+        return {
+          values: {},
+          errors,
+        };
+        // return {
+        //   values: {},
+        //   errors: error.errors.reduce((prev: any, curr: any) => {
+        //     return {
+        //       ...prev,
+        //       [curr.path[0]]: {
+        //         type: curr.message,
+        //         message: curr.message,
+        //       },
+        //     };
+        //   }, {}),
+        // };
+      } else {
+        // toast error
+        console.error('Unhandled error:', error);
+        throw error;
+        // return {
+        //   values: {},
+        //   errors: {},
+        // };
+      }
+    }
+  };
+
   const {
     register,
     control,
@@ -67,15 +104,25 @@ export default function InvoiceForm() {
     formState,
     getValues,
     setValue,
+    setError,
     reset,
   } = useForm<InvoiceInput>({
-    resolver: zodResolver(invoiceSchema),
+    // resolver: zodResolver(invoiceSchema),
+    // resolver: dynamicResolver,
+    // TODO: this seems to be working - but problems with treating empty string as zero:
+    // look into zod coersion vs form { valueAsNumber }
+    resolver: (values, context, options) => {
+      const schema =
+        values.status === 'draft' ? draftInvoiceSchema : invoiceSchema;
+      return zodResolver(schema)(values, context, options);
+    },
     defaultValues: {
       paymentTerms: 28,
       customer: '',
       items: [{}],
-      status: 'draft',
+      status: 'pending',
     },
+    // mode: 'onChange',
   });
 
   const { errors } = formState;
@@ -90,7 +137,8 @@ export default function InvoiceForm() {
     console.log('onSubmit', data);
     // TODO: save as draft ? - need to set status before this so that it goes through zodResolver
     // will need to be a hidden form element?
-    data.status = 'pending';
+    // TODO: how to deal with saving as paid / mark as paid etc - maybe button in edit form page
+    // setValue('status', 'pending');
     createInvoice(data, {
       onSuccess: () => {
         reset();
@@ -99,18 +147,46 @@ export default function InvoiceForm() {
     });
   };
 
+  // TODO: this seems to work but it doesn't get rid of the errors if you edit a field -
+  // could maybe just set the validation type to onChange in the useForm?
   const saveDraft = (event: React.SyntheticEvent) => {
     event.preventDefault();
-    const data = formState;
-    console.log('saveDraft', data);
+    console.log('saveDraft');
+    setValue('status', 'draft');
+
+    void handleSubmit(onSubmit)(event);
+
+    // try {
+    //   const data = getValues();
+    //   const parsed = draftInvoiceSchema.parse(data);
+    //   console.log('parsed data:', parsed);
+
+    //   createInvoice(parsed, {
+    //     onSuccess: () => {
+    //       reset();
+    //       navigate('/invoices');
+    //     },
+    //   });
+    // } catch (error) {
+    //   if (error instanceof ZodError) {
+    //     error.errors.forEach((validationError) => {
+    //       setError(validationError.path[0] as keyof InvoiceDraft, {
+    //         type: 'manual',
+    //         message: validationError.message,
+    //       });
+    //     });
+    //   }
+    // }
   };
 
   return (
     <div className="w-full">
       <form
         className="flex flex-col w-full"
+        noValidate
         onSubmit={(event) => {
           event.preventDefault();
+          setValue('status', 'pending');
           void handleSubmit(onSubmit)(event);
         }}
       >
@@ -134,6 +210,7 @@ export default function InvoiceForm() {
 
         <FormInput
           label="Payment terms (days)"
+          type="number"
           error={errors.paymentTerms}
           {...register('paymentTerms')}
         />
@@ -166,7 +243,10 @@ export default function InvoiceForm() {
                 <div key={field.id} className="flex gap-4">
                   <FormInput
                     className="w-1/5"
-                    {...register(`items.${index}.quantity` as const)}
+                    type="number"
+                    {...register(`items.${index}.quantity` as const, {
+                      valueAsNumber: true,
+                    })}
                     aria-describedby="labelQuantity"
                     placeholder="1"
                     error={errors.items && errors.items[index]?.quantity}
@@ -180,7 +260,11 @@ export default function InvoiceForm() {
                   />
                   <FormInput
                     className="w-1/5"
-                    {...register(`items.${index}.amount` as const)}
+                    type="number"
+                    step="0.01"
+                    {...register(`items.${index}.amount` as const, {
+                      valueAsNumber: true,
+                    })}
                     placeholder="100"
                     aria-describedby="labelAmount"
                     error={errors.items && errors.items[index]?.amount}
