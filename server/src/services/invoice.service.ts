@@ -19,7 +19,10 @@ export const getInvoices = async (user: UserDocument | undefined) => {
   //   customer: CustomerDocument;
   // }>('customer');
   console.log('getInvoices, user:', user?.id);
-  const populated = await user?.populate('invoices');
+  const populated = await user?.populate({
+    path: 'invoices',
+    populate: { path: 'customer' },
+  });
   console.log('populated: ', JSON.stringify(populated));
   return populated?.invoices;
 };
@@ -31,6 +34,7 @@ export const getSingleInvoice = async (
   const populated = await user?.populate({
     path: 'invoices',
     match: { _id: invoiceId },
+    populate: { path: 'customer' },
   });
 
   return populated?.invoices[0];
