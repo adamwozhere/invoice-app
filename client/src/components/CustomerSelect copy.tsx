@@ -8,11 +8,10 @@ import { InvoiceInput } from '../schemas/invoice.schema';
 
 type Props = {
   customers: Customer[] | undefined;
-  selected: string | undefined;
+  selected: string;
 };
 
-// TODO: look into the HTML datalist for the customer select
-// TODO: make this into a forward ref component? -- register goes in wrong order because new customer is rendered conditionally
+// TODO: make this into a forward ref component
 
 export default function CustomerSelect({ customers, selected }: Props) {
   const methods = useFormContext<InvoiceInput>();
@@ -59,6 +58,9 @@ export default function CustomerSelect({ customers, selected }: Props) {
 
   return (
     <div>
+      <label htmlFor="customer" className="text-sm font-bold block">
+        Customer
+      </label>
       <select
         id="customer"
         className="appearance-none flex h-9 w-full bg-slate-300 px-3 py-1 pr-8 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed"

@@ -14,6 +14,7 @@ interface AuthContextType {
 }
 
 axios.defaults.withCredentials = true;
+axios.defaults.headers['content-type'] = 'application/json';
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 

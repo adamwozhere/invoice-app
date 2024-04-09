@@ -1,18 +1,30 @@
 import { z } from 'zod';
 import { customerSchema } from './customer.schema';
+import { Customer } from '../types/Customer';
 // import { addressSchema } from './address.schema';
 
-const itemSchema = z.object({
+export const itemSchema = z.object({
   quantity: z
-    .number({ invalid_type_error: 'Enter a number' })
-    .min(1, 'Cannot be zero')
-    .int('Enter a whole number'),
+    .number()
+    .or(z.string().trim().min(1, 'Enter a number'))
+    .pipe(
+      z.coerce
+        .number({ invalid_type_error: 'Enter a number' })
+        .min(1, 'Must be greater than zero')
+        .int('Enter a whole number')
+    ),
   description: z.string().trim().min(1, 'Enter item description'),
   amount: z
-    .number({ invalid_type_error: 'Enter a number' })
-    .min(1, 'Enter a number')
-    .pipe(z.coerce.number({ invalid_type_error: 'Enter a number' })),
+    .number()
+    .or(z.string().trim().min(1, 'Enter a number'))
+    .pipe(
+      z.coerce
+        .number({ invalid_type_error: 'Enter a number' })
+        .nonnegative('Enter a positive value')
+    ),
 });
+
+export type InvoiceItem = z.infer<typeof itemSchema>;
 
 export const invoiceSchema = z.object({
   // name: z.string().trim().min(1, 'Enter name'),
@@ -35,49 +47,52 @@ export const invoiceSchema = z.object({
         .nonnegative('Enter a positive number')
         .int('Enter a whole number')
     ),
-  status: z.enum(['draft', 'pending', 'paid']).default('draft'), // TODO: implement partial zod schema for drafts
-  customer: z.string().trim().min(1, 'Select customer'),
+  status: z.enum(['draft', 'pending', 'paid']).default('draft'),
+  customer: z
+    .string()
+    .trim()
+    .min(1, 'Select customer')
+    .refine((value) => value !== 'new', { message: 'Enter Customer' }),
   newCustomer: customerSchema.optional(),
   items: z
     .array(itemSchema)
     .min(1, 'Enter an item')
     .nonempty('Add at least one item'),
+  id: z.string().optional(),
 });
 
-export type InvoiceInput = z.infer<typeof invoiceSchema>;
+// export type InvoiceInput = z.infer<typeof invoiceSchema>;
+export type InvoiceInput = {
+  date: Date;
+  paymentTerms: number;
+  status: 'draft' | 'pending' | 'paid';
+  customer: string;
+  newCustomer?: Customer;
+  items: {
+    quantity: number;
+    description: string;
+    amount: number;
+  }[];
+  id?: string;
+};
 
 export const draftInvoiceSchema = z.object({
-  date: z.date().optional(),
+  date: z.date(),
   paymentTerms: z.coerce
     .number({ invalid_type_error: 'Enter a number' })
     .nonnegative('Enter a positive number')
     .int('Enter a whole number')
     .optional(),
   status: z.enum(['draft', 'pending', 'paid']).default('draft'),
-  customer: z.string().trim().optional(),
-  items: z
-    .array(
-      z.object({
-        quantity: z
-          .nan()
-          .transform(() => '')
-          .or(
-            z
-              .number({ invalid_type_error: 'Enter a number' })
-              .min(1, 'Cannot be zero')
-              .int('Enter a whole number')
-          )
-
-          .optional(),
-        description: z.string().trim().optional(),
-        amount: z
-          .nan()
-          .transform(() => '')
-          .or(z.number())
-          .optional(),
-      })
-    )
-    .optional(),
+  customer: z.string().trim(),
+  items: z.array(
+    z.object({
+      quantity: z.coerce.number(),
+      description: z.string().optional(),
+      amount: z.coerce.number(),
+    })
+  ),
+  id: z.string().optional(),
 });
 
 export type InvoiceDraft = z.infer<typeof draftInvoiceSchema>;

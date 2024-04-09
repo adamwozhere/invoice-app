@@ -4,7 +4,7 @@ import { FieldError } from 'react-hook-form';
 export interface Props extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   name: string;
-  error: FieldError | undefined;
+  error?: FieldError | undefined;
 }
 
 export const FormInput = forwardRef<HTMLInputElement, Props>(

@@ -2,7 +2,7 @@ import { Link, useParams } from 'react-router-dom';
 import useInvoices from '../hooks/useInvoices';
 
 export default function Invoice() {
-  const { invoiceId } = useParams();
+  const { invoiceId } = useParams() as { invoiceId: string };
 
   // const { data, error, isLoading } = useQuery({
   //   queryKey: ['invoices', { invoiceId }],
@@ -21,6 +21,7 @@ export default function Invoice() {
   return (
     <div>
       <Link to="/invoices">Back</Link>
+      <Link to="edit">Edit</Link>
       <h1>Invoice</h1>
       <pre>{JSON.stringify(data, null, 2)}</pre>
     </div>
