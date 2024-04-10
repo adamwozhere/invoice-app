@@ -30,7 +30,7 @@ export async function editInvoice({
   data,
 }: {
   invoiceId: string;
-  data: InvoiceFormValues; // Partial<Invoice> ?
+  data: InvoiceFormValues;
 }) {
   const res = await axios.put<Invoice>(`/api/invoices/${invoiceId}`, data);
   return res.data;

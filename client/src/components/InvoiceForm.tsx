@@ -15,6 +15,8 @@ import { useNavigate } from 'react-router-dom';
 import { useEditInvoice } from '../hooks/useEditInvoice';
 import { InvoiceFormValues } from '../types/Invoice';
 
+// TODO: implement backend saving as draft (optional fields)
+
 // TODO: note on react-hook-form void returns for attributes:
 /**
  * see here: https://github.com/orgs/react-hook-form/discussions/8622
@@ -61,6 +63,11 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
 
   // watch customer to toggle newCustomer form inputs
   const selectedCustomer = methods.watch('customer');
+  // watch status to switch draft / save as buttons depending on status
+
+  // base isDraftInvoice on the default values to conditionally render Create Invoice button,
+  // otherwise when clicking, the button will disappear as the status has been set to pending!
+  const isDraftInvoice = defaultValues.status === 'draft';
 
   // setup items array
   const { fields, append, remove } = useFieldArray({
@@ -75,13 +82,33 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
     // TODO: how to deal with saving as paid / mark as paid etc - maybe button in edit form page
     // setValue('status', 'pending');
     if (type === 'NewInvoice') {
+      // set to pending (note that this is changed AFTER the data is sent to this function!)
+      methods.setValue('status', 'pending');
+      // So need to set it directly to data (especially in case of Edit Invoice -> create invoice from a draft)
+      data.status = 'pending';
+
+      console.log('data is', data);
+
       createInvoice(data, {
         onSuccess: () => {
           methods.reset();
           navigate('/invoices');
         },
+        onError: (error) => {
+          console.log(error);
+        },
       });
     } else if (type === 'EditInvoice') {
+      console.log('edit invoice');
+      if (isDraftInvoice) {
+        console.log('setting to pending');
+
+        // triggers changing the validation schema but not the actual data as it is already present in function
+        methods.setValue('status', 'pending');
+        // therefore change it inside function directly also
+        data.status = 'pending';
+      }
+      console.log('data is', data);
       editInvoice(
         { invoiceId: data.id!, data: data },
         {
@@ -97,70 +124,49 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
     }
   };
 
-  // onCreateInvoice = (event: React.SyntheticEvent) => {
-  //   event.preventDefault();
-  //   methods.setValue('status', 'pending');
-
-  //   if (type === 'NewInvoice') {
-  //     void methods.handleSubmit((data: InvoiceInput) => {
-  //       createInvoice(data, {
-  //         onSuccess: () => {
-  //           methods.reset();
-  //           navigate('/invoices')
-  //         }
-  //       })
-  //     })(event)
-  // } else if (type === 'EditInvoice') {
-  //   void methods.handleSubmit((data: InvoiceInput & { id: string}) => {
-  //     editInvoice({ invoiceId: data.id, data: data}, {
-  //       onSuccess: () => {
-  //         methods.reset();
-  //         navigate('/invoices')
-  //       }
-  //     })
-  //   })(event)
-  // }
-  // }
-
-  const onSaveDraft = (event: React.SyntheticEvent) => {
+  const onSaveChanges = (event: React.SyntheticEvent) => {
     event.preventDefault();
-    methods.setValue('status', 'draft');
-    console.log('saving draft');
+    console.log('save changes');
 
-    if (type === 'NewInvoice') {
-      console.log('new');
-      void methods.handleSubmit((data: InvoiceFormValues) => {
-        console.log('try save new:', data);
-        createInvoice(data, {
+    // trigger handleSubmit to pass the form data to edit function
+    void methods.handleSubmit((data: InvoiceFormValues) => {
+      console.log('try save changes');
+      editInvoice(
+        { invoiceId: data.id!, data },
+        {
           onSuccess: () => {
             methods.reset();
-            navigate('/invoices');
+            navigate('/invoices'); // should it navigate to actual invoice?
           },
           onError: (error) => {
             console.log(error);
           },
-        });
-      })(event);
-    } else if (type === 'EditInvoice') {
-      void methods.handleSubmit((data: InvoiceFormValues) => {
-        console.log('try edit:', data);
-        console.log('id?', data.id);
-        // TODO: fix invoice schemas properly:
-        // make sure it understands dates and id's etc
-        editInvoice(
-          { invoiceId: data.id!, data: data },
-          {
-            onSuccess: () => {
-              methods.reset();
-              navigate('/invoices');
-            },
-            onError: (error) => {
-              console.log(error);
-            },
-          }
-        );
-      })(event);
-    }
+        }
+      );
+    })(event);
+  };
+
+  const onSaveDraft = (event: React.SyntheticEvent) => {
+    event.preventDefault();
+    // set invoiceStatus as draft
+    methods.setValue('status', 'draft');
+    console.log('saving draft');
+
+    console.log('new');
+
+    // then trigger handleSubmit to pass the form data to create function
+    void methods.handleSubmit((data: InvoiceFormValues) => {
+      console.log('try save new:', data);
+      createInvoice(data, {
+        onSuccess: () => {
+          methods.reset();
+          navigate('/invoices');
+        },
+        onError: (error) => {
+          console.log(error);
+        },
+      });
+    })(event);
   };
 
   return (
@@ -171,7 +177,7 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
           noValidate
           onSubmit={(event) => {
             event.preventDefault();
-            methods.setValue('status', 'pending');
+            // methods.setValue('status', 'pending');
             void methods.handleSubmit(onSubmit)(event);
           }}
         >
@@ -265,24 +271,34 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
                 label="Add item"
                 onClick={(e) => {
                   e.preventDefault();
-                  append({} as InvoiceInput['items']);
+                  append({} as InvoiceInput['items']); // TODO: change to get rid of InvoiceInput type, as using InvoiceFormValues instead
                 }}
               />
             </div>
           </div>
-          {/* TODO: only show save as a draft if it's new form ? */}
+
           {type === 'NewInvoice' ? (
-            <Button onClick={onSaveDraft} label="Save draft" />
+            <>
+              <Button onClick={onSaveDraft} label="Save as draft" />
+              <Button type="submit" label="Create invoice" />
+            </>
           ) : null}
 
-          <Button
-            type="submit"
-            label={type === 'NewInvoice' ? 'Create invoice' : 'Save changes'}
-          />
+          {type === 'EditInvoice' && isDraftInvoice ? (
+            <>
+              <Button onClick={onSaveChanges} label="Save changes" />
+              <Button type="submit" label="Create invoice" />
+            </>
+          ) : null}
+
+          {type === 'EditInvoice' && !isDraftInvoice ? (
+            <>
+              <Button type="submit" label="Save changes" />
+            </>
+          ) : null}
         </form>
       </FormProvider>
       <DevTool control={methods.control} />
-      <pre>{JSON.stringify(customers, null, 2)}</pre>
     </div>
   );
 }
