@@ -4,7 +4,7 @@ import { Customer } from '../types/Customer';
 import { useCreateCustomer } from '../hooks/useCreateCustomer';
 import { FormInput } from './ui/FormInput';
 import Button from './ui/Button';
-import { InvoiceInput } from '../schemas/invoice.schema';
+import { InvoiceFormValues } from '../types/Invoice';
 
 type Props = {
   customers: Customer[] | undefined;
@@ -15,7 +15,7 @@ type Props = {
 // TODO: make this into a forward ref component? -- register goes in wrong order because new customer is rendered conditionally
 
 export default function CustomerSelect({ customers, selected }: Props) {
-  const methods = useFormContext<InvoiceInput>();
+  const methods = useFormContext<InvoiceFormValues>();
   const { mutate } = useCreateCustomer();
 
   const createCustomer = () => {
@@ -23,14 +23,14 @@ export default function CustomerSelect({ customers, selected }: Props) {
     if (data) {
       mutate(
         {
-          name: data.name,
-          email: data.email,
+          name: data.name ?? '',
+          email: data.email ?? '',
           address: {
-            line1: data.address.line1,
-            line2: data.address.line2 ?? '',
-            city: data.address.city,
-            county: data.address.county ?? '',
-            postcode: data.address.postcode,
+            line1: data.address?.line1 ?? '',
+            line2: data.address?.line2 ?? '',
+            city: data.address?.city ?? '',
+            county: data.address?.county ?? '',
+            postcode: data.address?.postcode ?? '',
           },
         },
         {

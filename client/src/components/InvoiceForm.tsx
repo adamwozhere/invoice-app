@@ -14,6 +14,7 @@ import { useCreateInvoice } from '../hooks/useCreateInvoice';
 import { useNavigate } from 'react-router-dom';
 import { useEditInvoice } from '../hooks/useEditInvoice';
 import { InvoiceFormValues } from '../types/Invoice';
+import toast from 'react-hot-toast';
 
 // TODO: implement backend saving as draft (optional fields)
 
@@ -75,6 +76,13 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
     control: methods.control,
   });
 
+  // watch items to calculate and show item totals - should show grand total too?
+  const watchItems = methods.watch('items');
+
+  const onCancel = () => {
+    navigate(-1);
+  };
+
   const onSubmit = (data: InvoiceFormValues) => {
     console.log('onSubmit', data);
     // TODO: save as draft ? - need to set status before this so that it goes through zodResolver
@@ -92,9 +100,11 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
       createInvoice(data, {
         onSuccess: () => {
           methods.reset();
+          toast.success('Invoice created!');
           navigate('/invoices');
         },
         onError: (error) => {
+          toast.error('Could not create invoice - try again');
           console.log(error);
         },
       });
@@ -114,9 +124,11 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
         {
           onSuccess: () => {
             methods.reset();
+            toast.success('Invoice created!');
             navigate('/invoices');
           },
           onError: (error) => {
+            toast.error('Could not create invoice - try again');
             console.log(error);
           },
         }
@@ -136,9 +148,11 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
         {
           onSuccess: () => {
             methods.reset();
+            toast.success('Changes saved');
             navigate('/invoices'); // should it navigate to actual invoice?
           },
           onError: (error) => {
+            toast.error('Could not save changes - try again');
             console.log(error);
           },
         }
@@ -160,9 +174,11 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
       createInvoice(data, {
         onSuccess: () => {
           methods.reset();
+          toast.success('Draft invoice created');
           navigate('/invoices');
         },
         onError: (error) => {
+          toast.error('Could not create draft - try again');
           console.log(error);
         },
       });
@@ -255,6 +271,10 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
                       error={errors.items && errors.items[index]?.amount}
                     />
                     {/* <div>{field.amount * field.quantity}</div> */}
+                    <div>
+                      {watchItems![index].amount! *
+                        watchItems![index].quantity!}
+                    </div>
                     <Button
                       label="x"
                       aria-label="Remove item"
@@ -267,6 +287,7 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
                   </div>
                 );
               })}
+              <div>Total: calculate total here!</div>
               <Button
                 label="Add item"
                 onClick={(e) => {
@@ -279,6 +300,7 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
 
           {type === 'NewInvoice' ? (
             <>
+              <Button onClick={onCancel} label="Cancel" />
               <Button onClick={onSaveDraft} label="Save as draft" />
               <Button type="submit" label="Create invoice" />
             </>
@@ -286,6 +308,7 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
 
           {type === 'EditInvoice' && isDraftInvoice ? (
             <>
+              <Button onClick={onCancel} label="Cancel" />
               <Button onClick={onSaveChanges} label="Save changes" />
               <Button type="submit" label="Create invoice" />
             </>
@@ -293,6 +316,7 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
 
           {type === 'EditInvoice' && !isDraftInvoice ? (
             <>
+              <Button onClick={onCancel} label="Cancel" />
               <Button type="submit" label="Save changes" />
             </>
           ) : null}

@@ -1,10 +1,12 @@
 import { Link, Outlet } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { Toaster } from 'react-hot-toast';
 
 export default function Layout() {
   const { user, logout } = useAuth();
   return (
     <div className="min-h-screen w-full flex">
+      <Toaster position="top-right" reverseOrder={false} />
       <section className="px-4 py-8 bg-green-700 text-white">
         <div className="mb-8 flex">
           <a href="/" className="text-3xl text-bold">
