@@ -5,6 +5,7 @@ import { useCreateCustomer } from '../hooks/useCreateCustomer';
 import { FormInput } from './ui/FormInput';
 import Button from './ui/Button';
 import { InvoiceFormValues } from '../types/Invoice';
+import toast from 'react-hot-toast';
 
 type Props = {
   customers: Customer[] | undefined;
@@ -18,7 +19,10 @@ export default function CustomerSelect({ customers, selected }: Props) {
   const methods = useFormContext<InvoiceFormValues>();
   const { mutate } = useCreateCustomer();
 
-  const createCustomer = () => {
+  const createCustomer = (event: React.SyntheticEvent) => {
+    // event.preventDefault();
+    // event.stopPropagation();
+    // TODO: how to not trigger validation for fields outside the new customer form?
     const data = methods.getValues('newCustomer');
     if (data) {
       mutate(
@@ -35,6 +39,7 @@ export default function CustomerSelect({ customers, selected }: Props) {
         },
         {
           onSuccess: (newCustomer) => {
+            toast.success('Customer created');
             methods.setValue('customer', newCustomer.id);
             // may have to use setValue instead
             methods.reset((values) => ({
@@ -51,6 +56,10 @@ export default function CustomerSelect({ customers, selected }: Props) {
                 },
               },
             }));
+          },
+          onError: (error) => {
+            toast.error('Could not create customer, try again');
+            console.log(error);
           },
         }
       );
