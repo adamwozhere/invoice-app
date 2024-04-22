@@ -124,7 +124,9 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
         {
           onSuccess: () => {
             methods.reset();
-            toast.success('Invoice created!');
+            toast.success(
+              isDraftInvoice ? 'Invoice created!' : 'Changes saved'
+            );
             navigate('/invoices');
           },
           onError: (error) => {
@@ -288,11 +290,21 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
                 );
               })}
               <div>Total: calculate total here!</div>
+              <div>
+                {watchItems?.reduce((acc, curr) => {
+                  return acc + curr.amount! * curr.quantity!;
+                }, 0)}
+              </div>
+
               <Button
                 label="Add item"
                 onClick={(e) => {
                   e.preventDefault();
-                  append({} as InvoiceInput['items']); // TODO: change to get rid of InvoiceInput type, as using InvoiceFormValues instead
+                  append({
+                    quantity: '',
+                    description: '',
+                    amount: '',
+                  } as unknown as InvoiceInput['items']); // TODO: change to get rid of InvoiceInput type, as using InvoiceFormValues instead
                 }}
               />
             </div>
