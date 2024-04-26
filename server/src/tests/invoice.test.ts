@@ -220,7 +220,7 @@ describe('invoice', () => {
     const invoice = {
       date: new Date('01-01-2024'),
       paymentTerms: 28,
-      status: 'draft',
+      status: 'pending',
       customer: '',
       items: [
         { quantity: 10, description: 'Item 1', amount: 1.99 },
@@ -242,7 +242,7 @@ describe('invoice', () => {
         .expect(201);
 
       // expect(res.body).toEqual({});
-      expect(res.body).toEqual(expect.objectContaining({ status: 'draft' }));
+      expect(res.body).toEqual(expect.objectContaining({ status: 'pending' }));
     });
 
     it('returns calculated fields: invoiceNumber', async () => {
@@ -340,7 +340,10 @@ describe('invoice', () => {
         .send(omit(invoice, 'date'))
         .expect(400);
 
-      expect(res.body.error.issues[0].code).toBe('invalid_type');
+      console.log(res.body.error.issues);
+      expect(res.body.error.issues[0].unionErrors[0].issues[0].code).toBe(
+        'invalid_type'
+      );
     });
 
     it('validates: date type', async () => {
@@ -353,7 +356,9 @@ describe('invoice', () => {
         })
         .expect(400);
 
-      expect(res.body.error.issues[0].code).toBe('invalid_type');
+      expect(res.body.error.issues[0].unionErrors[0].issues[0].code).toBe(
+        'invalid_type'
+      );
     });
 
     it('validates: date format', async () => {
@@ -366,7 +371,9 @@ describe('invoice', () => {
         })
         .expect(400);
 
-      expect(res.body.error.issues[0].code).toBe('invalid_type');
+      expect(res.body.error.issues[0].unionErrors[0].issues[0].code).toBe(
+        'invalid_type'
+      );
     });
 
     it('validates: missing paymentTerms', async () => {
@@ -376,7 +383,9 @@ describe('invoice', () => {
         .send(omit(invoice, 'paymentTerms'))
         .expect(400);
 
-      expect(res.body.error.issues[0].code).toBe('invalid_type');
+      expect(res.body.error.issues[0].unionErrors[0].issues[0].code).toBe(
+        'invalid_type'
+      );
     });
 
     it('validates: paymentTerms: whole number', async () => {
@@ -412,7 +421,9 @@ describe('invoice', () => {
         .send(omit(invoice, 'status'))
         .expect(400);
 
-      expect(res.body.error.issues[0].code).toBe('invalid_type');
+      expect(res.body.error.issues[0].unionErrors[0].issues[0].code).toBe(
+        'invalid_type'
+      );
     });
 
     it('validates: status type', async () => {
@@ -425,7 +436,9 @@ describe('invoice', () => {
         })
         .expect(400);
 
-      expect(res.body.error.issues[0].code).toBe('invalid_type');
+      expect(res.body.error.issues[0].unionErrors[0].issues[0].code).toBe(
+        'invalid_type'
+      );
     });
 
     it('validates: status enum', async () => {
@@ -438,7 +451,9 @@ describe('invoice', () => {
         })
         .expect(400);
 
-      expect(res.body.error.issues[0].code).toBe('invalid_enum_value');
+      expect(res.body.error.issues[0].unionErrors[0].issues[0].code).toBe(
+        'invalid_enum_value'
+      );
     });
 
     it('validates: missing customer', async () => {
@@ -448,7 +463,9 @@ describe('invoice', () => {
         .send(omit(invoice, 'customer'))
         .expect(400);
 
-      expect(res.body.error.issues[0].code).toBe('invalid_type');
+      expect(res.body.error.issues[0].unionErrors[0].issues[0].code).toBe(
+        'invalid_type'
+      );
     });
 
     it('validates: customer type', async () => {
@@ -461,7 +478,9 @@ describe('invoice', () => {
         })
         .expect(400);
 
-      expect(res.body.error.issues[0].code).toBe('invalid_type');
+      expect(res.body.error.issues[0].unionErrors[0].issues[0].code).toBe(
+        'invalid_type'
+      );
     });
 
     it('validates: customer: ObjectId format', async () => {
@@ -484,7 +503,9 @@ describe('invoice', () => {
         .send(omit(invoice, 'items'))
         .expect(400);
 
-      expect(res.body.error.issues[0].code).toBe('invalid_type');
+      expect(res.body.error.issues[0].unionErrors[0].issues[0].code).toBe(
+        'invalid_type'
+      );
     });
 
     it('validates: empty item array', async () => {
@@ -510,7 +531,9 @@ describe('invoice', () => {
         })
         .expect(400);
 
-      expect(res.body.error.issues[0].code).toBe('invalid_type');
+      expect(res.body.error.issues[0].unionErrors[0].issues[0].code).toBe(
+        'invalid_type'
+      );
     });
 
     it('validates: items.quantity: type', async () => {
@@ -528,7 +551,9 @@ describe('invoice', () => {
         })
         .expect(400);
 
-      expect(res.body.error.issues[0].code).toBe('invalid_type');
+      expect(res.body.error.issues[0].unionErrors[0].issues[0].code).toBe(
+        'invalid_type'
+      );
     });
 
     it('validates: items.quantity: whole number', async () => {
@@ -546,7 +571,9 @@ describe('invoice', () => {
         })
         .expect(400);
 
-      expect(res.body.error.issues[0].code).toBe('invalid_type');
+      expect(res.body.error.issues[0].unionErrors[0].issues[0].code).toBe(
+        'invalid_type'
+      );
     });
 
     it('validates: items.quantity: min: 1', async () => {
@@ -577,7 +604,9 @@ describe('invoice', () => {
         })
         .expect(400);
 
-      expect(res.body.error.issues[0].code).toBe('invalid_type');
+      expect(res.body.error.issues[0].unionErrors[0].issues[0].code).toBe(
+        'invalid_type'
+      );
     });
 
     it('validates: items.description type', async () => {
@@ -595,7 +624,9 @@ describe('invoice', () => {
         })
         .expect(400);
 
-      expect(res.body.error.issues[0].code).toBe('invalid_type');
+      expect(res.body.error.issues[0].unionErrors[0].issues[0].code).toBe(
+        'invalid_type'
+      );
     });
 
     it('validates: missing item.amount', async () => {
@@ -608,7 +639,9 @@ describe('invoice', () => {
         })
         .expect(400);
 
-      expect(res.body.error.issues[0].code).toBe('invalid_type');
+      expect(res.body.error.issues[0].unionErrors[0].issues[0].code).toBe(
+        'invalid_type'
+      );
     });
 
     it('validates: items.amount type', async () => {
@@ -626,7 +659,9 @@ describe('invoice', () => {
         })
         .expect(400);
 
-      expect(res.body.error.issues[0].code).toBe('invalid_type');
+      expect(res.body.error.issues[0].unionErrors[0].issues[0].code).toBe(
+        'invalid_type'
+      );
     });
 
     it('validates: items.amount: non-negative', async () => {
@@ -645,6 +680,93 @@ describe('invoice', () => {
         .expect(400);
 
       expect(res.body.error.issues[0].code).toBe('too_small');
+    });
+
+    it('draft invoice can be created with optional fields', async () => {
+      const res = await api
+        .post('/api/invoices')
+        .set('Authorization', accessToken)
+        .send({
+          status: 'draft',
+        })
+        .expect(201);
+
+      expect(res.body).toEqual({
+        status: 'draft',
+        due: null,
+        id: expect.any(String),
+        invoiceNumber: expect.any(Number),
+        items: [],
+        total: 0,
+        user: expect.any(String),
+      });
+    });
+  });
+
+  describe('PUT /api/invoices', () => {
+    const invoice = {
+      date: new Date('01-01-2024'),
+      paymentTerms: 28,
+      status: 'pending',
+      customer: '',
+      items: [
+        { quantity: 10, description: 'Item 1', amount: 1.99 },
+        { quantity: 2, description: 'Item 2', amount: 24.99 },
+        { quantity: 100, description: 'Item 3', amount: 0.9 },
+      ],
+      user: '',
+      id: '',
+    };
+
+    beforeAll(async () => {
+      const customer = await Customer.findOne({ name: 'George Holloway' });
+      invoice.customer = customer!.id;
+
+      const user = await User.findOne({ name: 'Sherlock Holmes' });
+      invoice.user = user!.id;
+
+      const inv = await Invoice.create(invoice);
+      invoice.id = inv.id;
+
+      user!.invoices = [inv];
+      await user!.save();
+    });
+
+    it('an invoice can be updated', async () => {
+      const res = await api
+        .put(`/api/invoices/${invoice.id}`)
+        .set('Authorization', accessToken)
+        .send({
+          date: new Date('02-02-2024'),
+          paymentTerms: 1,
+          status: 'draft',
+          customer: null,
+          items: [{ quantity: 1, description: 'Item 1', amount: 0.9 }],
+          user: invoice.user,
+          id: invoice.id,
+        })
+        .expect(200);
+
+      expect(res.body).toEqual({
+        date: '2024-02-02T00:00:00.000Z',
+        due: '2024-02-03T00:00:00.000Z',
+        customer: null,
+        status: 'draft',
+        paymentTerms: 1,
+        invoiceNumber: expect.any(Number),
+        items: [
+          {
+            quantity: 1,
+            description: 'Item 1',
+            amount: 0.9,
+            total: 0.9,
+            id: expect.any(String),
+          },
+        ],
+        total: 0.9,
+        user: invoice.user,
+        id: invoice.id,
+      });
     });
   });
 });

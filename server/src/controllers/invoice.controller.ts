@@ -12,6 +12,7 @@ import {
   EditInvoiceInput,
   GetInvoiceByIdInput,
 } from '../schemas/invoice.schema';
+import logger from '../utils/logger';
 
 export const getInvoicesHandler = async (req: Request, res: Response) => {
   const { user } = req;
@@ -34,6 +35,7 @@ export const getSingleInvoiceHandler = async (
     return res.sendStatus(404);
   }
 
+  logger.info(`RETURNING: ${JSON.stringify(invoice)}`);
   return res.json(invoice);
 };
 
@@ -46,6 +48,8 @@ export const createInvoiceHandler = async (
   if (!user) {
     return res.sendStatus(400);
   }
+
+  logger.info(`try createInvoice with data: ${JSON.stringify(body)}`);
 
   const data = {
     ...body,

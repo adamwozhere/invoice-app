@@ -19,10 +19,10 @@ export default function CustomerSelect({ customers, selected }: Props) {
   const methods = useFormContext<InvoiceFormValues>();
   const { mutate } = useCreateCustomer();
 
-  const createCustomer = (event: React.SyntheticEvent) => {
+  const createCustomer = () => {
     // event.preventDefault();
     // event.stopPropagation();
-    // TODO: how to not trigger validation for fields outside the new customer form?
+    // TODO: how to not trigger validation for fields outside the new customer form? as it seems to submit, show an error field and unset the invoice date
     const data = methods.getValues('newCustomer');
     if (data) {
       mutate(
@@ -73,7 +73,7 @@ export default function CustomerSelect({ customers, selected }: Props) {
         className="appearance-none flex h-9 w-full bg-slate-300 px-3 py-1 pr-8 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed"
         {...methods.register('customer')}
       >
-        <option value="">-select customer-</option>
+        <option value="null">-select customer-</option>
         {customers?.map((cust) => (
           <option key={cust.id} value={cust.id}>
             {cust.name}

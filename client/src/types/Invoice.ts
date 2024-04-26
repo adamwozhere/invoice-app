@@ -65,7 +65,7 @@ export interface InvoiceFormValues {
   invoiceNumber?: number;
   date?: string;
   paymentTerms?: number;
-  customer?: string;
+  customer?: string | null;
   newCustomer?: {
     name?: string;
     email?: string;

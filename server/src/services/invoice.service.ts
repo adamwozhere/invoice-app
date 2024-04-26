@@ -4,6 +4,7 @@ import Invoice, {
   InvoiceInput,
 } from '../models/invoice.model';
 import { UserDocument } from '../models/user.model';
+import logger from '../utils/logger';
 
 // TODO: check queries / sanitizing
 // see:
@@ -37,6 +38,8 @@ export const getSingleInvoice = async (
     populate: { path: 'customer' },
   });
 
+  logger.info(`getSingleInvoice: ${JSON.stringify(populated, null, 2)}`);
+
   return populated?.invoices[0];
 };
 
@@ -49,9 +52,15 @@ export const createInvoice = async (user: UserDocument, data: InvoiceInput) => {
 };
 
 export async function updateInvoiceById(id: string, data: object) {
-  const invoice = await Invoice.findByIdAndUpdate(id, data).populate<{
-    customer: CustomerDocument;
-  }>('customer');
+  // const invoice = await Invoice.findByIdAndUpdate(id, data, {
+  //   new: true,
+  // }).populate<{
+  //   customer: CustomerDocument;
+  // }>('customer');
+  const invoice = await Invoice.findByIdAndUpdate(id, data, {
+    returnDocument: 'after',
+  });
+  logger.info(`findByIdAndUpdate returning: ${JSON.stringify(invoice)}`);
   return invoice;
 }
 
@@ -81,9 +90,14 @@ export const editInvoiceById = async (
     return null;
   }
 
+  logger.info(`findOneAndUpdate sending data: ${JSON.stringify(data)}`);
+
   const invoice = await Invoice.findOneAndUpdate({ _id: id }, data, {
-    returnedDocument: 'after',
-  });
+    returnDocument: 'after',
+    overwriteDiscriminatorKey: true,
+  }).populate<{ customer: CustomerDocument }>('customer');
+
+  logger.info(`findOneAndUpdate returning: ${JSON.stringify(invoice)}`);
 
   return invoice;
 };

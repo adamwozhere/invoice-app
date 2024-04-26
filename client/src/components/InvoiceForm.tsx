@@ -49,6 +49,10 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
   const { mutate: createInvoice } = useCreateInvoice();
   const { mutate: editInvoice } = useEditInvoice();
 
+  if (!defaultValues.customer) {
+    defaultValues.customer = '';
+  }
+
   const methods = useForm<InvoiceFormValues>({
     // TODO: this seems to be working - but problems with treating empty string as zero:
     // look into zod coersion vs form { valueAsNumber }
@@ -63,7 +67,7 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
   const { errors } = methods.formState;
 
   // watch customer to toggle newCustomer form inputs
-  const selectedCustomer = methods.watch('customer');
+  const selectedCustomer = methods.watch('customer') ?? 'null';
   // watch status to switch draft / save as buttons depending on status
 
   // base isDraftInvoice on the default values to conditionally render Create Invoice button,
@@ -89,6 +93,12 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
     // will need to be a hidden form element?
     // TODO: how to deal with saving as paid / mark as paid etc - maybe button in edit form page
     // setValue('status', 'pending');
+
+    // transform 'null' customer to null;
+    if (data.customer === 'null') {
+      data.customer = null;
+    }
+
     if (type === 'NewInvoice') {
       // set to pending (note that this is changed AFTER the data is sent to this function!)
       methods.setValue('status', 'pending');
@@ -145,6 +155,12 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
     // trigger handleSubmit to pass the form data to edit function
     void methods.handleSubmit((data: InvoiceFormValues) => {
       console.log('try save changes');
+
+      // transform 'null' customer to null;
+      if (data.customer === 'null') {
+        data.customer = null;
+      }
+
       editInvoice(
         { invoiceId: data.id!, data },
         {
@@ -173,6 +189,12 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
     // then trigger handleSubmit to pass the form data to create function
     void methods.handleSubmit((data: InvoiceFormValues) => {
       console.log('try save new:', data);
+
+      // transform 'null' customer to null;
+      if (data.customer === 'null') {
+        data.customer = null;
+      }
+
       createInvoice(data, {
         onSuccess: () => {
           methods.reset();

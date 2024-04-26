@@ -22,27 +22,44 @@ export const itemSchema = z.object({
 
 // TODO: use .pipe to enable coercion properly and give required error before the coercion ?
 export const invoiceBody = {
-  body: z.object({
-    // invoice number
-    date: z
-      .string({ required_error: 'Enter invoice date' })
-      .pipe(z.coerce.date()),
-    // date: z.coerce.date({
-    //   required_error: 'Enter invoice date',
-    //   invalid_type_error: 'type Date is required',
-    // }),
-    paymentTerms: z
-      .number({ required_error: 'Enter number of days' })
-      .int('Enter a whole number')
-      .positive('Value must be positive'),
-    status: z.enum(['draft', 'pending', 'paid'], {
-      required_error: 'Enter invoice status',
+  body: z.union([
+    z.object({
+      // invoice number
+      date: z
+        .string({ required_error: 'Enter invoice date' })
+        .pipe(z.coerce.date()),
+      // date: z.coerce.date({
+      //   required_error: 'Enter invoice date',
+      //   invalid_type_error: 'type Date is required',
+      // }),
+      paymentTerms: z
+        .number({ required_error: 'Enter number of days' })
+        .int('Enter a whole number')
+        .positive('Value must be positive'),
+      status: z.enum(['pending', 'paid'], {
+        required_error: 'Enter invoice status',
+      }),
+      customer: objectIdSchema,
+      items: z
+        .array(itemSchema, { required_error: 'Enter an item' })
+        .min(1, 'Enter at least one item'),
     }),
-    customer: objectIdSchema,
-    items: z
-      .array(itemSchema, { required_error: 'Enter an item' })
-      .min(1, 'Enter at least one item'),
-  }),
+    z.object({
+      date: z.string().optional(),
+      paymentTerms: z.number().optional(),
+      status: z.literal('draft'),
+      customer: z.union([objectIdSchema, z.null()]).optional(),
+      items: z
+        .array(
+          z.object({
+            quantity: z.number().int().nonnegative().optional(),
+            description: z.string().optional(),
+            amount: z.number().nonnegative().optional(),
+          })
+        )
+        .optional(),
+    }),
+  ]),
 };
 
 export const invoiceParams = {

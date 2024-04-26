@@ -14,7 +14,7 @@ export default function EditInvoice() {
     // date: data?.date.substring(0, 10),
 
     // customer is returned as customer object, pass to id string
-    customer: data?.customer.id,
+    customer: data?.customer?.id ?? 'null',
     // date is returned as ISOString - trim off time
     date: data?.date.substring(0, 10),
   };
