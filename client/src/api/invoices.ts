@@ -36,3 +36,8 @@ export async function editInvoice({
   return res.data;
 }
 
+export async function deleteInvoice(invoiceId: string) {
+  const res = await axios.delete<Invoice>(`/api/invoices/${invoiceId}`);
+  return res.data;
+}
+

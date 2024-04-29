@@ -4,6 +4,8 @@ import { FormInput } from './ui/FormInput';
 import Button from './ui/Button';
 import { LoginInput, loginSchema } from '../schemas/login.schema';
 import { zodResolver } from '@hookform/resolvers/zod';
+import toast from 'react-hot-toast';
+import { AxiosError } from 'axios';
 
 export default function LoginForm() {
   const {
@@ -18,7 +20,15 @@ export default function LoginForm() {
   const onSubmit = async (data: LoginInput) => {
     console.log('login', data);
 
-    await login(data.email, data.password);
+    try {
+      await login(data.email, data.password);
+    } catch (err) {
+      if (err instanceof AxiosError && err?.response?.status === 401) {
+        toast.error('Incorrect username or password');
+      } else {
+        toast.error('Error: try again');
+      }
+    }
   };
 
   return (

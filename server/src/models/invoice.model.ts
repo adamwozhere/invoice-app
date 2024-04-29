@@ -160,6 +160,14 @@ invoice.pre('save', async function (next) {
   next();
 });
 
+// remove reference from User on delete
+invoice.pre('deleteOne', { document: true }, async function (next) {
+  await this.model('User').findByIdAndUpdate<UserDocument>(this.user, {
+    $pull: { customers: this._id },
+  });
+  next();
+});
+
 const draftInvoice = new Schema<InvoiceDocument>({
   invoiceNumber: Number,
   date: Date,

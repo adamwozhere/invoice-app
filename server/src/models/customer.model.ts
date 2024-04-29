@@ -1,4 +1,6 @@
 import mongoose, { Schema, Types } from 'mongoose';
+import User, { UserDocument, userSchema } from './user.model';
+import { InvoiceDocument } from './invoice.model';
 
 // TODO: check and investigate if my customer property should be ObjectId or string
 // the interface represents the Document as it is in mongoose,
@@ -76,6 +78,19 @@ const customerSchema = new Schema<CustomerDocument>(
     },
   }
 );
+
+// remove reference from User and Invoice on delete
+customerSchema.pre('deleteOne', { document: true }, async function (next) {
+  await this.model('User').findByIdAndUpdate<UserDocument>(this.user, {
+    $pull: { customers: this._id },
+  });
+
+  await this.model('Invoice').updateMany<InvoiceDocument>(
+    { customer: this._id },
+    { customer: null }
+  );
+  next();
+});
 
 const Customer = mongoose.model('Customer', customerSchema);
 

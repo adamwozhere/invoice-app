@@ -99,7 +99,8 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       navigate('/', { replace: true });
     } catch (err) {
-      console.error(err);
+      console.error('login error:', err);
+      throw err;
     }
   };
 

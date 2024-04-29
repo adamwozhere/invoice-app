@@ -69,7 +69,7 @@ const addressSchema = new Schema(
 
 // TODO: where do I put the password / confirm password, or is that only in the zod schema (as that is input not returned mongoose document)
 
-const userSchema = new Schema<UserDocument>(
+export const userSchema = new Schema<UserDocument>(
   {
     email: {
       type: String,
