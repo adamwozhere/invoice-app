@@ -1,5 +1,5 @@
 import mongoose, { Schema, Types } from 'mongoose';
-import User, { UserDocument, userSchema } from './user.model';
+import { UserDocument } from './user.model';
 import { InvoiceDocument } from './invoice.model';
 
 // TODO: check and investigate if my customer property should be ObjectId or string
