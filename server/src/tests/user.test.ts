@@ -16,7 +16,6 @@ afterAll(async () => {
 });
 
 const userInput = {
-  name: 'John Doe',
   email: 'john@doe.com',
   password: 'Qwerty1234',
   passwordConfirmation: 'Qwerty1234',
@@ -36,7 +35,6 @@ describe('user', () => {
       expect(await User.find({ email: 'john@doe.com' })).toHaveLength(1);
 
       expect(res.body).toEqual({
-        name: 'John Doe',
         email: 'john@doe.com',
         id: expect.stringMatching(/^[0-9a-f]{24}$/),
         invoices: [],
@@ -53,39 +51,6 @@ describe('user', () => {
         .expect('content-type', /application\/json/);
 
       expect(res.body).toBeDefined();
-    });
-
-    it('validates: missing name', async () => {
-      const res = await api
-        .post('/api/users')
-        .send(omit(userInput, 'name'))
-        .expect(400);
-
-      expect(res.body.error.issues[0].code).toEqual('invalid_type');
-    });
-
-    it('validates: name too short', async () => {
-      const res = await api
-        .post('/api/users')
-        .send({
-          ...userInput,
-          name: 'A',
-        })
-        .expect(400);
-
-      expect(res.body.error.issues[0].code).toEqual('too_small');
-    });
-
-    it('validates: name too long', async () => {
-      const res = await api
-        .post('/api/users')
-        .send({
-          ...userInput,
-          name: 'Name GreaterThanThirtyFiveCharacters',
-        })
-        .expect(400);
-
-      expect(res.body.error.issues[0].code).toEqual('too_big');
     });
 
     it('validates: missing email', async () => {

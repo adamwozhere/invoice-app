@@ -17,7 +17,6 @@ beforeAll(async () => {
   // create test user
   const pwd = await bcrypt.hash('Password123', 10);
   const user = await User.create({
-    name: 'Sherlock Holmes',
     email: 'sherlock@baker-st.com',
     passwordHash: pwd,
     address: {
@@ -68,7 +67,6 @@ beforeAll(async () => {
 
   const pwd2 = await bcrypt.hash('Password123', 10);
   const user2 = await User.create({
-    name: 'User 2',
     email: 'user@test.com,',
     passwordHash: pwd2,
     address: {
@@ -348,7 +346,7 @@ describe('customer', () => {
 
   describe('PUT /api/customers/:customerId', () => {
     it('logged-in user can edit a customer', async () => {
-      const user = await User.findOne({ name: 'Sherlock Holmes' });
+      const user = await User.findOne({ email: 'sherlock@baker-st.com' });
       await user!.populate('customers');
 
       const customerId = user!.customers[1]!.id;

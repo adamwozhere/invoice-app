@@ -17,7 +17,6 @@ import { CustomerDocument } from './customer.model';
  * -- used in functions after authUser middleware adds UserDocument to request
  */
 export interface UserDocument extends Document {
-  name: string;
   email: string;
   passwordHash: string;
   address: {
@@ -72,7 +71,6 @@ const addressSchema = new Schema(
 
 const userSchema = new Schema<UserDocument>(
   {
-    name: String,
     email: {
       type: String,
       required: true,

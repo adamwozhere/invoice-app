@@ -16,7 +16,6 @@ beforeAll(async () => {
   // create test user
   const pwd = await bcrypt.hash('Password123', 10);
   const user = await User.create({
-    name: 'Sherlock Holmes',
     email: 'sherlock@baker-st.com',
     passwordHash: pwd,
     address: {
@@ -722,7 +721,7 @@ describe('invoice', () => {
       const customer = await Customer.findOne({ name: 'George Holloway' });
       invoice.customer = customer!.id;
 
-      const user = await User.findOne({ name: 'Sherlock Holmes' });
+      const user = await User.findOne({ email: 'sherlock@baker-st.com' });
       invoice.user = user!.id;
 
       const inv = await Invoice.create(invoice);

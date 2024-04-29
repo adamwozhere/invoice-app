@@ -6,7 +6,6 @@ export const createUserSchema = z.object({
   body: z
     .object({
       // TODO: should strings be .trim() trimmed?
-      name: z.string({ required_error: 'Name is required' }).min(2).max(35),
       email: z
         .string({ required_error: 'Email is required' })
         .email('Enter a valid email address'),

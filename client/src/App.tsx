@@ -23,6 +23,7 @@ import type { HttpError } from './types/HttpError';
 import NewInvoice from './routes/NewInvoice';
 import Error from './routes/Error';
 import NotFound from './routes/NotFound';
+import Signup from './routes/Signup';
 
 // create Query Client
 const queryClient = new QueryClient({
@@ -60,6 +61,7 @@ export default function App() {
           <Route element={<Layout />} errorElement={<Error />}>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
             <Route element={<RequireAuth />}>
               <Route path="/invoices" element={<Invoices />} />
               <Route path="/invoices/new" element={<NewInvoice />} />
