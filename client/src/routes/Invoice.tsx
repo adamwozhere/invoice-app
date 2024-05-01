@@ -4,9 +4,12 @@ import Button from '../components/ui/Button';
 import { useDeleteInvoice } from '../hooks/useDeleteInvoice';
 import toast from 'react-hot-toast';
 import { useEditInvoice } from '../hooks/useEditInvoice';
+import { useState } from 'react';
+import Modal from '../components/ui/Modal';
 
 export default function Invoice() {
   const { invoiceId } = useParams() as { invoiceId: string };
+  const [modalOpen, setModalOpen] = useState(false);
   const navigate = useNavigate();
 
   // const { data, error, isLoading } = useQuery({
@@ -20,11 +23,6 @@ export default function Invoice() {
 
   const handleDelete = () => {
     deleteInvoice(invoiceId, {
-      // do I need this
-      onSettled: () => {
-        console.log('settled');
-        navigate('/invoices');
-      },
       onSuccess: () => {
         toast.success('Invoice deleted');
         console.log('delete invoice');
@@ -69,12 +67,29 @@ export default function Invoice() {
       <Link to="/invoices">Back</Link>
       <Link to="edit">Edit</Link>
       <h1>Invoice</h1>
+      {data?.status !== 'draft' ? (
+        <Button
+          label={
+            data?.status === 'pending' ? 'Mark as paid' : 'Mark as pending'
+          }
+          onClick={handleMarkAsPaid}
+          disabled={data?.status === 'paid'}
+        />
+      ) : null}
+
       <Button
-        label={data?.status === 'pending' ? 'Mark as paid' : 'Mark as pending'}
-        onClick={handleMarkAsPaid}
-        disabled={data?.status === 'paid'}
+        label="Delete"
+        onClick={() => setModalOpen(true)}
+        disabled={isPending}
       />
-      <Button label="Delete" onClick={handleDelete} disabled={isPending} />
+      <Modal
+        title="Confirm delete"
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onConfirm={handleDelete}
+      >
+        <p>Are you sure you want to delete this invoice?</p>
+      </Modal>
       <pre>{JSON.stringify(data, null, 2)}</pre>
     </div>
   );
