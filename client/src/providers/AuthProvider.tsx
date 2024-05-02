@@ -11,6 +11,14 @@ interface AuthContextType {
   } | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  refresh: () => Promise<void>;
+  setUser: React.Dispatch<
+    React.SetStateAction<{
+      email: string;
+      accessToken: string;
+      isAuthenticated: boolean;
+    } | null>
+  >;
 }
 
 axios.defaults.withCredentials = true;
@@ -20,6 +28,7 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
+
   const [user, setUser] = useState<{
     email: string;
     accessToken: string;
@@ -106,11 +115,22 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     setUser(null);
+    // remove refreshToken cookie
+    // should logout actually remove the refresh token from the server?
     navigate('/');
   };
 
+  const refresh = async () => {
+    const token = await refreshAccessToken();
+    setUser({
+      email: 'unknown',
+      accessToken: token,
+      isAuthenticated: true,
+    });
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, refresh, setUser }}>
       {children}
     </AuthContext.Provider>
   );

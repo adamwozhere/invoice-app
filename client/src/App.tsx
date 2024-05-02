@@ -24,6 +24,7 @@ import NewInvoice from './routes/NewInvoice';
 import Error from './routes/Error';
 import NotFound from './routes/NotFound';
 import Signup from './routes/Signup';
+import PersistLogin from './layouts/PersistLogin';
 
 // create Query Client
 const queryClient = new QueryClient({
@@ -59,26 +60,28 @@ export default function App() {
       <AuthProvider>
         <Routes>
           <Route element={<Layout />} errorElement={<Error />}>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route element={<RequireAuth />}>
-              <Route path="/invoices" element={<Invoices />} />
-              <Route path="/invoices/new" element={<NewInvoice />} />
-              <Route path="/invoices/:invoiceId" element={<Invoice />} />
-              <Route
-                path="/invoices/:invoiceId/edit"
-                element={<EditInvoice />}
-              />
-              <Route path="/customers" element={<Customers />} />
-              <Route path="/customers/new" element={<NewCustomer />} />
-              <Route path="/customers/:customerId" element={<Customer />} />
-              <Route
-                path="/customers/:customerId/edit"
-                element={<EditCustomer />}
-              />
+            <Route element={<PersistLogin />}>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route element={<RequireAuth />}>
+                <Route path="/invoices" element={<Invoices />} />
+                <Route path="/invoices/new" element={<NewInvoice />} />
+                <Route path="/invoices/:invoiceId" element={<Invoice />} />
+                <Route
+                  path="/invoices/:invoiceId/edit"
+                  element={<EditInvoice />}
+                />
+                <Route path="/customers" element={<Customers />} />
+                <Route path="/customers/new" element={<NewCustomer />} />
+                <Route path="/customers/:customerId" element={<Customer />} />
+                <Route
+                  path="/customers/:customerId/edit"
+                  element={<EditCustomer />}
+                />
+              </Route>
+              <Route path="*" element={<NotFound />} />
             </Route>
-            <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
       </AuthProvider>
