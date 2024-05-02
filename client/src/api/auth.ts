@@ -8,6 +8,11 @@ export async function loginUser(email: string, password: string) {
   return res.data;
 }
 
+export async function logoutUser() {
+  const res = await axios.get('/auth/logout');
+  return res;
+}
+
 export async function refreshAccessToken() {
   const res = await axios.get<{ accessToken: string }>('/auth/refresh');
   return res.data.accessToken;

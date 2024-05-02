@@ -1,7 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { createContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loginUser, refreshAccessToken } from '../api/auth';
+import { loginUser, logoutUser, refreshAccessToken } from '../api/auth';
 
 interface AuthContextType {
   user: {
@@ -115,8 +115,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     setUser(null);
-    // remove refreshToken cookie
-    // should logout actually remove the refresh token from the server?
+    void logoutUser();
     navigate('/');
   };
 
