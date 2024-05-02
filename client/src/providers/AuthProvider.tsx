@@ -6,7 +6,7 @@ import { loginUser, logoutUser, refreshAccessToken } from '../api/auth';
 type User = {
   email: string;
   accessToken: string;
-  isAuthenticate: boolean;
+  isAuthenticated: boolean;
 };
 
 interface AuthContextType {
