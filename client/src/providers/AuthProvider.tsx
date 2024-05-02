@@ -3,22 +3,17 @@ import { createContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loginUser, logoutUser, refreshAccessToken } from '../api/auth';
 
+type User = {
+  email: string;
+  accessToken: string;
+  isAuthenticate: boolean;
+};
+
 interface AuthContextType {
-  user: {
-    email: string;
-    accessToken: string;
-    isAuthenticated: boolean;
-  } | null;
+  user: User | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  refresh: () => Promise<void>;
-  setUser: React.Dispatch<
-    React.SetStateAction<{
-      email: string;
-      accessToken: string;
-      isAuthenticated: boolean;
-    } | null>
-  >;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
 }
 
 axios.defaults.withCredentials = true;
@@ -119,17 +114,17 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     navigate('/');
   };
 
-  const refresh = async () => {
-    const token = await refreshAccessToken();
-    setUser({
-      email: 'unknown',
-      accessToken: token,
-      isAuthenticated: true,
-    });
-  };
+  // const refresh = async () => {
+  //   const token = await refreshAccessToken();
+  //   setUser({
+  //     email: 'unknown',
+  //     accessToken: token,
+  //     isAuthenticated: true,
+  //   });
+  // };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, refresh, setUser }}>
+    <AuthContext.Provider value={{ user, login, logout, setUser }}>
       {children}
     </AuthContext.Provider>
   );
