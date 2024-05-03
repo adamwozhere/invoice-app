@@ -6,6 +6,7 @@ export type Item = {
   description: string;
   amount: number;
   total: number;
+  id: string;
 };
 
 export type Invoice = {

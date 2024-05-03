@@ -1,44 +1,79 @@
-import { Link, Outlet } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Toaster } from 'react-hot-toast';
+import MenuButton from '../components/ui/MenuButton';
+import InvoiceIcon from '../components/icons/InvoiceIcon';
+import CustomersIcon from '../components/icons/CustomersIcon';
+import HomeIcon from '../components/icons/HomeIcon';
+import LogoutIcon from '../components/icons/LogoutIcon';
+import UserIcon from '../components/icons/UserIcon';
 
 export default function Layout() {
   const { user, logout } = useAuth();
   return (
     <div className="min-h-screen w-full flex">
       <Toaster position="top-right" reverseOrder={false} />
-      <section className="px-4 py-8 bg-green-700 text-white">
-        <div className="mb-8 flex">
-          <a href="/" className="text-3xl text-bold">
-            Mint.
-          </a>
-          <div className="bg-green-200 w-4 h-4 rounded-tl-lg rounded-br-lg"></div>
-        </div>
-        <nav className="flex flex-col gap-8">
-          <menu>
-            {user ? (
-              <>
-                <span>Hello {user.email} !</span>
-                <button onClick={logout}>logout</button>
-              </>
-            ) : (
+      <section className="bg-gray-100 text-black w-full max-w-72 sticky top-0 h-screen">
+        <div className="px-10 py-8 relative h-full">
+          <div className=" flex">
+            <a href="/" className="text-3xl font-extrabold text-zinc-600">
+              Mint.
+            </a>
+            <div className="bg-green-400 w-4 h-4 rounded-tl-lg rounded-br-lg"></div>
+          </div>
+          <nav className="h-full py-8 pt-16">
+            <menu className="flex flex-col flex-1 gap-1 h-full">
+              {/* {user ? (
+                <>
+                  <span>Hello {user.email} !</span>
+                  <button onClick={logout}>logout</button>
+                </>
+              ) : (
+                <li>
+                  <Link to="/login">Login</Link>
+                </li>
+              )} */}
               <li>
-                <Link to="/login">Login</Link>
+                <MenuButton to="/" label="Home" icon={<HomeIcon />} />
               </li>
-            )}
-            <li>
-              <Link to="/">Home</Link>
-            </li>
-            <li>
-              <Link to="/invoices">Invoices</Link>
-            </li>
-            <li>
-              <Link to="/customers">Customers</Link>
-            </li>
-          </menu>
-        </nav>
+              <li>
+                <MenuButton
+                  to="/invoices"
+                  label="Invoices"
+                  icon={<InvoiceIcon />}
+                />
+              </li>
+              <li className="mb-auto">
+                <MenuButton
+                  to="/customers"
+                  label="Customers"
+                  icon={<CustomersIcon />}
+                />
+              </li>
+              {user ? (
+                <>
+                  <li>
+                    <MenuButton
+                      as="button"
+                      label={user?.email}
+                      icon={<UserIcon />}
+                    />
+                  </li>
+                  <li>
+                    <MenuButton
+                      as="button"
+                      onClick={logout}
+                      label="Logout"
+                      icon={<LogoutIcon />}
+                    />
+                  </li>
+                </>
+              ) : null}
+            </menu>
+          </nav>
+        </div>
       </section>
-      <main className="flex bg-gray-200 w-full justify-center px-8 py-8">
+      <main className="flex bg-gray-200 w-full justify-center px-8">
         <Outlet />
       </main>
     </div>
