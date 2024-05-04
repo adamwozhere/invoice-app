@@ -15,6 +15,9 @@ import { useNavigate } from 'react-router-dom';
 import { useEditInvoice } from '../hooks/useEditInvoice';
 import { InvoiceFormValues } from '../types/Invoice';
 import toast from 'react-hot-toast';
+import DeleteIcon from './icons/DeleteIcon';
+import formatCurrency from '../utils/formatCurrency';
+import PlusIcon from './icons/PlusIcon';
 
 // TODO: implement backend saving as draft (optional fields)
 
@@ -83,7 +86,8 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
   // watch items to calculate and show item totals - should show grand total too?
   const watchItems = methods.watch('items');
 
-  const onCancel = () => {
+  const onCancel = (e: React.SyntheticEvent) => {
+    e.preventDefault();
     navigate(-1);
   };
 
@@ -212,149 +216,178 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
   return (
     <div className="w-full">
       <FormProvider {...methods}>
-        <form
-          className="flex flex-col w-full"
-          noValidate
-          onSubmit={(event) => {
-            event.preventDefault();
-            // methods.setValue('status', 'pending');
-            void methods.handleSubmit(onSubmit)(event);
-          }}
-        >
-          <FormInput {...methods.register('id')} hidden disabled />
-
-          <FormInput
-            label="Invoice date"
-            type="date"
-            {...methods.register('date', { valueAsDate: true })}
-            defaultValue={
-              defaultValues.date ?? new Date().toISOString().substring(0, 10)
-            }
-            error={errors.date}
-          />
-
-          {/* TODO: add all hidden fields for whole invoice, so a full edited invoice can be sent */}
-
-          <input
-            hidden
-            disabled
-            aria-disabled
-            type="text"
-            {...methods.register('status')}
-          />
-
-          <FormInput
-            label="Payment terms (days)"
-            type="number"
-            error={errors.paymentTerms}
-            {...methods.register('paymentTerms')}
-          />
-
-          <CustomerSelect customers={customers} selected={selectedCustomer} />
-
-          <div className="mt-8 w-full">
-            <div className="flex gap-4 text-sm font-bold">
-              <label id="labelQuantity" className="w-1/5">
-                Quantity
-              </label>
-              <label id="labelDescription" className="w-3/5">
-                Item description
-              </label>
-              <label id="labelAmount" className="w-1/5">
-                Unit Price (£)
-              </label>
-            </div>
-            <div>
-              {fields.map((field, index) => {
-                return (
-                  <div key={field.id} className="flex gap-4">
-                    <FormInput
-                      className="w-1/5"
-                      type="number"
-                      {...methods.register(`items.${index}.quantity` as const)}
-                      aria-describedby="labelQuantity"
-                      placeholder="1"
-                      error={errors.items && errors.items[index]?.quantity}
-                    />
-                    <FormInput
-                      className="w-3/5"
-                      {...methods.register(
-                        `items.${index}.description` as const
-                      )}
-                      aria-describedby="labelDescription"
-                      placeholder="Item"
-                      error={errors.items && errors.items[index]?.description}
-                    />
-                    <FormInput
-                      className="w-1/5"
-                      type="number"
-                      step="0.01"
-                      {...methods.register(`items.${index}.amount` as const)}
-                      placeholder="100"
-                      aria-describedby="labelAmount"
-                      error={errors.items && errors.items[index]?.amount}
-                    />
-                    {/* <div>{field.amount * field.quantity}</div> */}
-                    <div>
-                      {watchItems![index].amount! *
-                        watchItems![index].quantity!}
-                    </div>
-                    <Button
-                      label="x"
-                      aria-label="Remove item"
-                      disabled={index === 0}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        remove(index);
-                      }}
-                    />
-                  </div>
-                );
-              })}
-              <div>Total: calculate total here!</div>
-              <div>
-                {watchItems?.reduce((acc, curr) => {
-                  return acc + curr.amount! * curr.quantity!;
-                }, 0)}
-              </div>
-
-              <Button
-                label="Add item"
-                onClick={(e) => {
-                  e.preventDefault();
-                  append({
-                    quantity: '',
-                    description: '',
-                    amount: '',
-                  } as unknown as InvoiceInput['items']); // TODO: change to get rid of InvoiceInput type, as using InvoiceFormValues instead
-                }}
+        <div className="bg-white px-6 py-8 rounded-xl">
+          <form
+            className="flex flex-col w-full"
+            noValidate
+            onSubmit={(event) => {
+              event.preventDefault();
+              // methods.setValue('status', 'pending');
+              void methods.handleSubmit(onSubmit)(event);
+            }}
+          >
+            <input type="text" hidden disabled {...methods.register('id')} />
+            <input
+              type="text"
+              hidden
+              disabled
+              {...methods.register('status')}
+            />
+            <div className="flex w-full gap-8">
+              <FormInput
+                label="Invoice date"
+                type="date"
+                {...methods.register('date', { valueAsDate: true })}
+                defaultValue={
+                  defaultValues.date ??
+                  new Date().toISOString().substring(0, 10)
+                }
+                error={errors.date}
+              />
+              <FormInput
+                label="Payment terms (days)"
+                type="number"
+                error={errors.paymentTerms}
+                {...methods.register('paymentTerms')}
               />
             </div>
-          </div>
-
-          {type === 'NewInvoice' ? (
-            <>
-              <Button onClick={onCancel} label="Cancel" />
-              <Button onClick={onSaveDraft} label="Save as draft" />
-              <Button type="submit" label="Create invoice" />
-            </>
-          ) : null}
-
-          {type === 'EditInvoice' && isDraftInvoice ? (
-            <>
-              <Button onClick={onCancel} label="Cancel" />
-              <Button onClick={onSaveChanges} label="Save changes" />
-              <Button type="submit" label="Create invoice" />
-            </>
-          ) : null}
-
-          {type === 'EditInvoice' && !isDraftInvoice ? (
-            <>
-              <Button onClick={onCancel} label="Cancel" />
-              <Button type="submit" label="Save changes" />
-            </>
-          ) : null}
-        </form>
+            <CustomerSelect customers={customers} selected={selectedCustomer} />
+            <div className="mt-8 w-full">
+              <div className="flex gap-4 text-sm font-bold">
+                <label id="labelQuantity" className="w-1/5 mb-1">
+                  Quantity
+                </label>
+                <label id="labelDescription" className="w-3/5 mb-1">
+                  Item description
+                </label>
+                <label id="labelAmount" className="w-1/5 mb-1">
+                  Unit Price
+                </label>
+                <label id="labelTotal" className="w-1/5 mb-1">
+                  Total
+                </label>
+                <label id="labelDelete" className="text-transparent">
+                  <DeleteIcon />
+                </label>
+              </div>
+              <div>
+                {fields.map((field, index) => {
+                  return (
+                    <div key={field.id} className="flex gap-4">
+                      <FormInput
+                        className="w-1/5"
+                        type="number"
+                        {...methods.register(
+                          `items.${index}.quantity` as const
+                        )}
+                        aria-describedby="labelQuantity"
+                        placeholder="1"
+                        error={errors.items && errors.items[index]?.quantity}
+                      />
+                      <FormInput
+                        className="w-3/5"
+                        {...methods.register(
+                          `items.${index}.description` as const
+                        )}
+                        aria-describedby="labelDescription"
+                        placeholder="Item"
+                        error={errors.items && errors.items[index]?.description}
+                      />
+                      <FormInput
+                        className="w-1/5"
+                        type="number"
+                        step="0.01"
+                        {...methods.register(`items.${index}.amount` as const)}
+                        placeholder="100"
+                        aria-describedby="labelAmount"
+                        error={errors.items && errors.items[index]?.amount}
+                      />
+                      {/* <div>{field.amount * field.quantity}</div> */}
+                      <div className="w-1/5">
+                        <div className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                          {(
+                            watchItems![index].amount! *
+                            watchItems![index].quantity!
+                          ).toFixed(2)}
+                        </div>
+                      </div>
+                      <button
+                        className={`flex h-10 items-center text-slate-400 ${
+                          index === 0 ? '' : 'hover:text-black'
+                        }`}
+                        aria-label="Delete item"
+                        disabled={index === 0}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          remove(index);
+                        }}
+                      >
+                        <DeleteIcon />
+                      </button>
+                    </div>
+                  );
+                })}
+                <div className="flex w-full justify-end items-center gap-4">
+                  <button
+                    className="flex px-1 py-2 h-10 gap-1 text-sm items-center mr-auto text-green-600 font-extrabold hover:text-black"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      append({
+                        quantity: '',
+                        description: '',
+                        amount: '',
+                      } as unknown as InvoiceInput['items']);
+                    }}
+                  >
+                    <PlusIcon /> Add item
+                  </button>
+                  <label className="flex px-3 py-2 font-bold text-sm mb-1">
+                    Invoice total
+                  </label>
+                  <div className="w-1/5 font-bold flex h-10 rounded-md bg-background px-3 py-2 text-sm ring-offset-background medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                    {formatCurrency(
+                      watchItems?.reduce((acc, curr) => {
+                        return acc + curr.amount! * curr.quantity!;
+                      }, 0) || 0
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-4 mt-10">
+              {type === 'NewInvoice' ? (
+                <>
+                  <div className="mr-auto">
+                    <Button
+                      onClick={onCancel}
+                      variant="tertiary"
+                      label="Cancel"
+                    />
+                  </div>
+                  <Button
+                    variant="secondary"
+                    onClick={onSaveDraft}
+                    label="Save as draft"
+                  />
+                  <Button type="submit" label="Create invoice" />
+                </>
+              ) : null}
+              {type === 'EditInvoice' && isDraftInvoice ? (
+                <>
+                  <Button onClick={onCancel} label="Cancel" />
+                  <Button onClick={onSaveChanges} label="Save changes" />
+                  <Button type="submit" label="Create invoice" />
+                </>
+              ) : null}
+              {type === 'EditInvoice' && !isDraftInvoice ? (
+                <>
+                  <Button onClick={onCancel} label="Cancel" />
+                  <Button type="submit" label="Save changes" />
+                </>
+              ) : null}
+            </div>
+          </form>
+        </div>
       </FormProvider>
       <DevTool control={methods.control} />
     </div>

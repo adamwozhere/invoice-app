@@ -67,10 +67,14 @@ export default function CustomerSelect({ customers, selected }: Props) {
   };
 
   return (
-    <div>
+    <div className="mt-4">
+      <label htmlFor="customer" className="flex font-bold text-sm mb-1">
+        Customer
+      </label>
       <select
         id="customer"
-        className="appearance-none flex h-9 w-full bg-slate-300 px-3 py-1 pr-8 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed"
+        // className="appearance-none flex h-9 min-w-lg bg-slate-300 px-3 py-1 pr-8 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed"
+        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         {...methods.register('customer')}
       >
         <option value="null">-select customer-</option>

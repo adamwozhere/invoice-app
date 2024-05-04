@@ -12,14 +12,15 @@ export const FormInput = forwardRef<HTMLInputElement, Props>(
     const id = useId();
 
     return (
-      <div className={`mb-4 max-w-sm ${className ?? ''}`}>
+      <div className={`mb-4 min-w-sm ${className ?? ''}`}>
         {label ? (
-          <label className="font-bold text-sm" htmlFor={id}>
+          <label className="flex font-bold text-sm mb-1" htmlFor={id}>
             {label}
           </label>
         ) : null}
         <input
-          className="flex h-9 w-full bg-slate-300 px-3 py-1 text-sm shadow-sm placeholder:text-red focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+          // className="flex h-9 w-full bg-slate-300 px-3 py-1 text-sm shadow-sm placeholder:text-red focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           id={id}
           ref={ref}
           name={name}

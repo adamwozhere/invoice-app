@@ -27,8 +27,10 @@ export default function NewCustomer() {
   };
 
   return (
-    <div>
-      <h1>New customer</h1>
+    <div className="max-w-5xl w-full">
+      <div>
+        <h1>New customer</h1>
+      </div>
       <CustomerForm
         onSubmit={(event) => {
           event.preventDefault();
