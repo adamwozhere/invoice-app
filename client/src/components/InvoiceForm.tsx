@@ -76,6 +76,7 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
   // base isDraftInvoice on the default values to conditionally render Create Invoice button,
   // otherwise when clicking, the button will disappear as the status has been set to pending!
   const isDraftInvoice = defaultValues.status === 'draft';
+  console.log('isDraftInvoice', isDraftInvoice, defaultValues.status);
 
   // setup items array
   const { fields, append, remove } = useFieldArray({
@@ -213,6 +214,19 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
     })(event);
   };
 
+  const onDeleteItem = (e: React.SyntheticEvent, index: number) => {
+    e.preventDefault();
+    if (fields.length === 1 && index === 0) {
+      methods.reset({
+        items: [
+          { quantity: '', description: '', amount: '' },
+        ] as unknown as InvoiceInput['items'],
+      });
+    } else {
+      remove(index);
+    }
+  };
+
   return (
     <div className="w-full">
       <FormProvider {...methods}>
@@ -237,7 +251,7 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
               <FormInput
                 label="Invoice date"
                 type="date"
-                {...methods.register('date', { valueAsDate: true })}
+                {...methods.register('date')} // valueAsDate: true
                 defaultValue={
                   defaultValues.date ??
                   new Date().toISOString().substring(0, 10)
@@ -312,15 +326,9 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
                         </div>
                       </div>
                       <button
-                        className={`flex h-10 items-center text-slate-400 ${
-                          index === 0 ? '' : 'hover:text-black'
-                        }`}
+                        className="flex h-10 items-center text-slate-400 hover:text-black"
                         aria-label="Delete item"
-                        disabled={index === 0}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          remove(index);
-                        }}
+                        onClick={(e) => onDeleteItem(e, index)}
                       >
                         <DeleteIcon />
                       </button>
@@ -374,14 +382,26 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
               ) : null}
               {type === 'EditInvoice' && isDraftInvoice ? (
                 <>
-                  <Button onClick={onCancel} label="Cancel" />
-                  <Button onClick={onSaveChanges} label="Save changes" />
+                  <Button
+                    onClick={onCancel}
+                    variant="tertiary"
+                    label="Cancel"
+                  />
+                  <Button
+                    onClick={onSaveChanges}
+                    variant="secondary"
+                    label="Save changes"
+                  />
                   <Button type="submit" label="Create invoice" />
                 </>
               ) : null}
               {type === 'EditInvoice' && !isDraftInvoice ? (
                 <>
-                  <Button onClick={onCancel} label="Cancel" />
+                  <Button
+                    onClick={onCancel}
+                    variant="tertiary"
+                    label="Cancel"
+                  />
                   <Button type="submit" label="Save changes" />
                 </>
               ) : null}

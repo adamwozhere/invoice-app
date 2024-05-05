@@ -134,19 +134,19 @@ export default function Invoice() {
           <div>
             <h3 className="font-bold">Billed to:</h3>
             <address className="not-italic mt-2 text-slate-500">
-              {data?.customer.name}
+              {data?.customer?.name}
               <br />
-              {data?.customer.email}
+              {data?.customer?.email}
               <br />
-              {data?.customer.address.line1}
+              {data?.customer?.address.line1}
               <br />
-              {data?.customer.address.line2}
+              {data?.customer?.address.line2}
               <br />
-              {data?.customer.address.city}
+              {data?.customer?.address.city}
               <br />
-              {data?.customer.address.county}
+              {data?.customer?.address.county}
               <br />
-              {data?.customer.address.postcode}
+              {data?.customer?.address.postcode}
               <br />
             </address>
           </div>

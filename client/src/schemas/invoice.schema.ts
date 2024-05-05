@@ -34,7 +34,7 @@ export const invoiceSchema = z.object({
   //   .min(1, 'Enter email address')
   //   .email('Enter valid email address'),
   // address: addressSchema,
-  date: z.date(),
+  date: z.coerce.date(),
   paymentTerms: z
     .number()
     .or(z.string().trim().min(1, 'Enter a number'))
@@ -52,7 +52,9 @@ export const invoiceSchema = z.object({
     .string()
     .trim()
     .min(1, 'Select customer')
-    .refine((value) => value !== 'new', { message: 'Enter Customer' }),
+    .refine((value) => value !== 'new' && value !== 'null', {
+      message: 'Enter Customer',
+    }),
   newCustomer: customerSchema.optional(),
   items: z
     .array(itemSchema)
@@ -77,7 +79,7 @@ export type InvoiceInput = {
 };
 
 export const draftInvoiceSchema = z.object({
-  date: z.date(),
+  date: z.coerce.date(),
   paymentTerms: z.coerce
     .number({ invalid_type_error: 'Enter a number' })
     .nonnegative('Enter a positive number')

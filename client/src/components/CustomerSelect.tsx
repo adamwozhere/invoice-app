@@ -66,25 +66,46 @@ export default function CustomerSelect({ customers, selected }: Props) {
     }
   };
 
+  const cancelCreateNewCustomer = () => {
+    methods.reset((values) => ({
+      ...values,
+      customer: 'null',
+      newCustomer: {
+        name: '',
+        email: '',
+        address: {
+          line1: '',
+          line2: '',
+          city: '',
+          county: '',
+          postcode: '',
+        },
+      },
+    }));
+  };
+
   return (
     <div className="mt-4">
       <label htmlFor="customer" className="flex font-bold text-sm mb-1">
         Customer
       </label>
-      <select
-        id="customer"
-        // className="appearance-none flex h-9 min-w-lg bg-slate-300 px-3 py-1 pr-8 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed"
-        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-        {...methods.register('customer')}
-      >
-        <option value="null">-select customer-</option>
-        {customers?.map((cust) => (
-          <option key={cust.id} value={cust.id}>
-            {cust.name}
-          </option>
-        ))}
-        <option value="new">-new customer-</option>
-      </select>
+      {selected !== 'new' ? (
+        <select
+          id="customer"
+          // className="appearance-none flex h-9 min-w-lg bg-slate-300 px-3 py-1 pr-8 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed"
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          {...methods.register('customer')}
+        >
+          <option value="null">-select customer-</option>
+          {customers?.map((cust) => (
+            <option key={cust.id} value={cust.id}>
+              {cust.name}
+            </option>
+          ))}
+          <option value="new">-new customer-</option>
+        </select>
+      ) : null}
+
       <span role="alert" className="text-red-600 text-xs font-bold">
         {methods.formState.errors && methods.formState.errors.customer?.message}
       </span>
@@ -126,7 +147,14 @@ export default function CustomerSelect({ customers, selected }: Props) {
             {...methods.register('newCustomer.address.postcode')}
             error={methods.formState.errors.newCustomer?.address?.postcode}
           />
-          <Button onClick={createCustomer} label="Add customer" />
+          <div className="flex gap-4">
+            <Button
+              onClick={cancelCreateNewCustomer}
+              variant="tertiary"
+              label="Cancel"
+            />
+            <Button onClick={createCustomer} label="Add customer" />
+          </div>
         </div>
       ) : null}
     </div>
