@@ -73,7 +73,8 @@ export default function Layout() {
           </nav>
         </div>
       </section>
-      <main className="flex bg-gray-200 w-full justify-center px-8">
+
+      <main className="flex bg-gray-200 w-full justify-center px-8 pl-[calc(100vw-100%)]">
         <Outlet />
       </main>
     </div>

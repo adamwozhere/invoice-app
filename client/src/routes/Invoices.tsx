@@ -4,30 +4,23 @@ import formatDate from '../utils/formatDate';
 import StatusPill from '../components/ui/StatusPill';
 import formatCurrency from '../utils/formatCurrency';
 import formatInvoiceNumber from '../utils/formatInvoiceNumber';
-import SortIon from '../components/icons/SortIcon';
+import SortIcon from '../components/icons/SortIcon';
 import Invoice from './Invoice';
 import PlusIcon from '../components/icons/PlusIcon';
-import Button from '../components/ui/Button';
+// import Button from '../components/ui/Button';
 
 export default function Invoices() {
   const { data, error, isLoading } = useInvoices();
 
-  const [params] = useSearchParams();
-  let filter = params.get('filter');
-  let sort = params.get('sort');
-  let order = params.get('order');
+  const [params] = useSearchParams({
+    filter: 'all',
+    sort: 'invoice',
+    order: 'desc',
+  });
 
-  // TODO: set default to all -- doesn't work
-  if (filter === null) {
-    filter = 'all';
-  }
-  if (sort === null) {
-    sort = 'invoice';
-  }
-
-  if (order === null) {
-    order = 'asc';
-  }
+  const filter = params.get('filter');
+  const sort = params.get('sort');
+  const order = params.get('order');
 
   if (error) {
     return <p>Something went wrong...</p>;
@@ -48,7 +41,7 @@ export default function Invoices() {
     status: 'status',
   };
 
-  const sortKey = sortKeys[sort];
+  const sortKey = sortKeys[sort!];
 
   invoices?.sort((a, b) =>
     order === 'asc'
@@ -111,14 +104,14 @@ export default function Invoices() {
           </div>
         </div>
         <div className="grid grid-cols-5 px-6 py-4 font-bold bg-white text-zinc-400 text-xs gap-4 mb-[2px] uppercase rounded-t-xl border-b-2 border-gray-200">
-          <h3 id="invoice-number flex">
+          <h3 id="invoice-number">
             <Link
               className="inline-flex gap-1"
               to={`?filter=${filter}&sort=invoice&order=${
                 order === 'asc' ? 'desc' : 'asc'
               }`}
             >
-              Invoice number <SortIon />
+              Invoice number <SortIcon />
             </Link>
           </h3>
           <h3 id="invoice-date">
@@ -128,7 +121,7 @@ export default function Invoices() {
                 order === 'asc' ? 'desc' : 'asc'
               }`}
             >
-              Date <SortIon />
+              Date <SortIcon />
             </Link>
           </h3>
           <h3 id="invoice-customer">
@@ -138,7 +131,7 @@ export default function Invoices() {
                 order === 'asc' ? 'desc' : 'asc'
               }`}
             >
-              Customer <SortIon />
+              Customer <SortIcon />
             </Link>
           </h3>
           <h3 id="invoice-total" className="text-end">
@@ -148,7 +141,7 @@ export default function Invoices() {
                 order === 'asc' ? 'desc' : 'asc'
               }`}
             >
-              Total <SortIon />
+              Total <SortIcon />
             </Link>
           </h3>
           <h3 id="invoice-status" className="text-end">
@@ -158,7 +151,7 @@ export default function Invoices() {
                 order === 'asc' ? 'desc' : 'asc'
               }`}
             >
-              Status <SortIon />
+              Status <SortIcon />
             </Link>
           </h3>
         </div>

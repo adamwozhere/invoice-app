@@ -56,7 +56,7 @@ export default function Customers() {
           </li>
         ))}
       </ul>
-      <pre>{JSON.stringify(data, null, 2)}</pre>
+      <div className="h-6 bg-zinc-100 rounded-b-xl mt-[2px] mb-20"></div>
     </div>
   );
 }

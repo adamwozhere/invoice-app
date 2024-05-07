@@ -24,11 +24,7 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
 
-  const [user, setUser] = useState<{
-    email: string;
-    accessToken: string;
-    isAuthenticated: boolean;
-  } | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   // TODO: how to make this automatic
   if (user) {
