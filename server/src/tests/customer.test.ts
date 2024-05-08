@@ -17,6 +17,7 @@ beforeAll(async () => {
   // create test user
   const pwd = await bcrypt.hash('Password123', 10);
   const user = await User.create({
+    name: 'Sherlock Holmes',
     email: 'sherlock@baker-st.com',
     passwordHash: pwd,
     address: {
@@ -67,6 +68,7 @@ beforeAll(async () => {
 
   const pwd2 = await bcrypt.hash('Password123', 10);
   const user2 = await User.create({
+    name: 'Test',
     email: 'user@test.com,',
     passwordHash: pwd2,
     address: {

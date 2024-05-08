@@ -127,7 +127,6 @@ describe('auth', () => {
 
       expect(res.body).toEqual({
         accessToken: expect.any(String),
-        email: expect.any(String),
       });
 
       // set refresh and access tokens for use in further tests

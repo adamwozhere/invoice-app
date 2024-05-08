@@ -16,6 +16,7 @@ beforeAll(async () => {
   // create test user
   const pwd = await bcrypt.hash('Password123', 10);
   const user = await User.create({
+    name: 'Sherlock Holmes',
     email: 'sherlock@baker-st.com',
     passwordHash: pwd,
     address: {
@@ -697,7 +698,7 @@ describe('invoice', () => {
         invoiceNumber: expect.any(Number),
         items: [],
         total: 0,
-        user: expect.any(String),
+        user: expect.any(Object),
       });
     });
   });
@@ -741,7 +742,7 @@ describe('invoice', () => {
           status: 'draft',
           customer: null,
           items: [{ quantity: 1, description: 'Item 1', amount: 0.9 }],
-          user: invoice.user,
+          user: expect.any(Object),
           id: invoice.id,
         })
         .expect(200);
@@ -763,7 +764,7 @@ describe('invoice', () => {
           },
         ],
         total: 0.9,
-        user: invoice.user,
+        user: expect.any(Object),
         id: invoice.id,
       });
     });

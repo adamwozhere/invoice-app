@@ -16,9 +16,15 @@ afterAll(async () => {
 });
 
 const userInput = {
+  name: 'John Doe',
   email: 'john@doe.com',
   password: 'Qwerty1234',
   passwordConfirmation: 'Qwerty1234',
+  address: {
+    line1: '10 Fitzrovia',
+    city: 'London',
+    postcode: 'LN1 1LN',
+  },
 };
 
 // TODO: delete user account?
@@ -35,7 +41,13 @@ describe('user', () => {
       expect(await User.find({ email: 'john@doe.com' })).toHaveLength(1);
 
       expect(res.body).toEqual({
+        name: 'John Doe',
         email: 'john@doe.com',
+        address: {
+          line1: '10 Fitzrovia',
+          city: 'London',
+          postcode: 'LN1 1LN',
+        },
         id: expect.stringMatching(/^[0-9a-f]{24}$/),
         invoices: [],
         customers: [],
