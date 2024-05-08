@@ -2,6 +2,8 @@ import { useParams } from 'react-router-dom';
 import useInvoices from '../hooks/useInvoices';
 import InvoiceForm from '../components/InvoiceForm';
 
+// TODO: work out why selected customer not showing when editing an invoice
+
 export default function EditInvoice() {
   const { invoiceId } = useParams() as { invoiceId: string };
 

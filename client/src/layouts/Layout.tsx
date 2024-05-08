@@ -12,10 +12,10 @@ export default function Layout() {
   const { user, logout } = useAuth();
   return (
     <div className="min-h-screen w-full flex">
-      <Toaster position="top-right" reverseOrder={false} />
-      <section className="bg-gray-100 text-black w-full max-w-72 sticky top-0 h-screen">
+      <Toaster position="top-center" reverseOrder={false} />
+      <section className="bg-white text-black w-full max-w-72 sticky top-0 h-screen">
         <div className="px-10 py-8 flex flex-col h-full">
-          <div className=" flex">
+          <div className="flex">
             <a href="/" className="text-3xl font-extrabold text-zinc-600">
               Mint.
             </a>

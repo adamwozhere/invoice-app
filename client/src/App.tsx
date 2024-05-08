@@ -25,6 +25,7 @@ import Error from './routes/Error';
 import NotFound from './routes/NotFound';
 import Signup from './routes/Signup';
 import PersistLogin from './layouts/PersistLogin';
+import IntroLayout from './layouts/IntroLayout';
 
 // create Query Client
 const queryClient = new QueryClient({
@@ -59,12 +60,14 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Routes>
-          <Route element={<Layout />} errorElement={<Error />}>
-            <Route element={<PersistLogin />}>
-              <Route path="/" element={<Index />} />
+          <Route element={<PersistLogin />}>
+            <Route element={<IntroLayout />}>
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+            </Route>
+            <Route element={<Layout />} errorElement={<Error />}>
               <Route element={<RequireAuth />}>
+                <Route path="/" element={<Index />} />
                 <Route path="/invoices" element={<Invoices />} />
                 <Route path="/invoices/new" element={<NewInvoice />} />
                 <Route path="/invoices/:invoiceId" element={<Invoice />} />

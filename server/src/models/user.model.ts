@@ -17,6 +17,7 @@ import { CustomerDocument } from './customer.model';
  * -- used in functions after authUser middleware adds UserDocument to request
  */
 export interface UserDocument extends Document {
+  name: string;
   email: string;
   passwordHash: string;
   address: {
@@ -27,8 +28,6 @@ export interface UserDocument extends Document {
     postcode: string;
   };
   // bank details?
-  // invoices: Types.DocumentArray<PopulatedDoc<InvoiceDocument>>;
-  // customers: Types.DocumentArray<PopulatedDoc<CustomerDocument>>;
   invoices: Array<PopulatedDoc<InvoiceDocument>>;
   customers: Array<PopulatedDoc<CustomerDocument>>;
   // totalInvoices: number;
@@ -71,6 +70,10 @@ const addressSchema = new Schema(
 
 export const userSchema = new Schema<UserDocument>(
   {
+    name: {
+      type: String,
+      required: true,
+    },
     email: {
       type: String,
       required: true,

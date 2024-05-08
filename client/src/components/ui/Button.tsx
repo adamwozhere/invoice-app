@@ -6,8 +6,14 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export default function Button({ label, variant = 'primary', ...rest }: Props) {
+  // const variants = {
+  //   primary: 'bg-green-400 text-black hover:bg-opacity-70',
+  //   secondary: 'bg-zinc-300 text-black hover:bg-opacity-70',
+  //   tertiary:
+  //     'border-2 border-zinc-300 bg-transparent text-black hover:text-zinc-400',
+  // };
   const variants = {
-    primary: 'bg-green-400 text-black hover:bg-opacity-70',
+    primary: 'bg-emerald-700 text-white hover:bg-green-400',
     secondary: 'bg-zinc-300 text-black hover:bg-opacity-70',
     tertiary:
       'border-2 border-zinc-300 bg-transparent text-black hover:text-zinc-400',

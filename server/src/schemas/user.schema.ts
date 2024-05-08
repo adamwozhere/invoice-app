@@ -1,4 +1,5 @@
 import { TypeOf, z } from 'zod';
+import { addressSchema } from './address.schema';
 
 // TODO: fix user schemas for the controller inputs - check how specifically it's done in the tomdoes rest api tutorial
 
@@ -6,6 +7,7 @@ export const createUserSchema = z.object({
   body: z
     .object({
       // TODO: should strings be .trim() trimmed?
+      name: z.string().trim().min(1, 'Name is required'),
       email: z
         .string({ required_error: 'Email is required' })
         .email('Enter a valid email address'),
@@ -24,6 +26,7 @@ export const createUserSchema = z.object({
       passwordConfirmation: z.string({
         required_error: 'Password confirmation is required',
       }),
+      address: addressSchema,
     })
     .refine((data) => data.password === data.passwordConfirmation, {
       message: 'Passwords do not match',

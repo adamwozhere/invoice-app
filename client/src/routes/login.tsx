@@ -1,14 +1,11 @@
-import { Link } from 'react-router-dom';
 import LoginForm from '../components/LoginForm';
 
 export default function Login() {
+  // TODO: redirect if already logged in
+  // TODO: message showing successful acount creation and prompt to now login
   return (
-    <div>
-      <h1>Login</h1>
+    <div className="max-w-sm w-full h-full flex flex-col justify-center">
       <LoginForm />
-      <h2>
-        Or <Link to="/signup">sign up</Link>
-      </h2>
     </div>
   );
 }

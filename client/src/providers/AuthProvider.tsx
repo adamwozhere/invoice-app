@@ -2,19 +2,17 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { createContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loginUser, logoutUser, refreshAccessToken } from '../api/auth';
-
-type User = {
-  email: string;
-  accessToken: string;
-  isAuthenticated: boolean;
-};
+import { jwtDecode } from 'jwt-decode';
+import { Auth } from '../types/Auth';
 
 interface AuthContextType {
-  user: User | null;
+  user: Auth | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  setUser: React.Dispatch<React.SetStateAction<Auth | null>>;
 }
+
+// TODO: use jwt decode to get name, email, id, etc. from token, then put into the User state
 
 axios.defaults.withCredentials = true;
 axios.defaults.headers['content-type'] = 'application/json';
@@ -24,12 +22,12 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
 
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<Auth | null>(null);
 
   // TODO: how to make this automatic
-  if (user) {
-    user.isAuthenticated = !!user;
-  }
+  // if (user) {
+  //   user.isAuthenticated = !!user;
+  // }
   // useCallback ????
   // const logout = () => {
   //   setUser(null);
@@ -37,6 +35,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   // };
 
   useEffect(() => {
+    console.log('useEffect => user is', user);
     const requestInterceptor = axios.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
         if (!config.headers.Authorization) {
@@ -63,18 +62,29 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
             prevRequest.sent = true;
 
             try {
+              console.log('refreshing');
               const token = await refreshAccessToken();
+              const decoded = jwtDecode<{ name: string; email: string }>(token);
 
-              setUser((prev) => ({
-                email: prev?.email ?? '',
+              // update access token (should I keep prev ?)
+              setUser({
+                name: decoded.name,
+                email: decoded.email,
                 accessToken: token,
                 isAuthenticated: true,
-              }));
+              });
+
+              // update accessToken
+              // setUser((prev) => ({
+              //   ...prev!,
+              //   accessToken: token,
+              //   isAuthenticated: true,
+              // }));
 
               prevRequest.headers.Authorization = `Bearer ${token}`;
               return axios.request(prevRequest);
             } catch (err) {
-              console.log('could not refresh access token');
+              console.error('could not refresh access token');
               setUser(null);
             }
           }
@@ -91,12 +101,19 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const user = await loginUser(email, password);
+      console.log('log in setUser');
+      const { accessToken } = await loginUser(email, password);
+      const decoded = jwtDecode<{ name: string; email: string }>(accessToken);
+
+      // update access token (should I keep prev ?)
       setUser({
-        email: user.email,
-        accessToken: user.accessToken,
+        name: decoded.name,
+        email: decoded.email,
+        accessToken,
         isAuthenticated: true,
       });
+
+      console.log('after setUser, user is', user);
       navigate('/', { replace: true });
     } catch (err) {
       console.error('login error:', err);

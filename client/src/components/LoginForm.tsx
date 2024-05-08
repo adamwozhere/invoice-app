@@ -6,6 +6,7 @@ import { LoginInput, loginSchema } from '../schemas/login.schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import toast from 'react-hot-toast';
 import { AxiosError } from 'axios';
+import { Link } from 'react-router-dom';
 
 export default function LoginForm() {
   const {
@@ -32,7 +33,8 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="min-w-md bg-slate-50 p-8">
+    <div className="bg-gray-200 p-8 -mt-32">
+      <h1 className="text-4xl font-bold text-gray-500 mb-10">Log in</h1>
       <form
         onSubmit={(event) => {
           event.preventDefault();
@@ -48,6 +50,16 @@ export default function LoginForm() {
         />
         <Button label="Log in" type="submit" />
       </form>
+      <h2 className="mt-8 text-lg text-gray-500">
+        Don&apos;t have an account?&nbsp;
+        <Link
+          to="/signup"
+          className="text-black font-medium hover:underline underline-offset-2"
+        >
+          Sign up
+        </Link>
+        .
+      </h2>
     </div>
   );
 }

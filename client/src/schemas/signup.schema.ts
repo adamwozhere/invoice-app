@@ -1,7 +1,9 @@
 import { z } from 'zod';
+import { addressSchema } from './address.schema';
 
 export const signupSchema = z
   .object({
+    name: z.string().trim().min(1, 'Enter name'),
     email: z
       .string()
       .trim()
@@ -16,6 +18,7 @@ export const signupSchema = z
         'Password must contain at least one number, one uppercase letter, one lowercase letter, and no spaces'
       ),
     passwordConfirmation: z.string({ required_error: 'Confirm password' }),
+    address: addressSchema,
   })
   .refine((data) => data.password === data.passwordConfirmation, {
     message: 'Passwords do not match',

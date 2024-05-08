@@ -1,9 +1,9 @@
 import SignupForm from '../components/SignupForm';
 
 export default function Signup() {
+  // TODO: redirect if already signed up
   return (
-    <div>
-      <h1>Sign up</h1>
+    <div className="max-w-sm w-full h-full flex flex-col justify-center">
       <SignupForm />
     </div>
   );

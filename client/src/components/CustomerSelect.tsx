@@ -19,9 +19,11 @@ export default function CustomerSelect({ customers, selected }: Props) {
   const methods = useFormContext<InvoiceFormValues>();
   const { mutate } = useCreateCustomer();
 
-  const createCustomer = () => {
-    // event.preventDefault();
-    // event.stopPropagation();
+  // TODO: work out why onSubmit function on InvoiceForm does not fire if you enter new customer details but don't save, then create invoice
+
+  const createCustomer = (e: React.SyntheticEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     // TODO: how to not trigger validation for fields outside the new customer form? as it seems to submit, show an error field and unset the invoice date
     const data = methods.getValues('newCustomer');
     if (data) {

@@ -1,4 +1,4 @@
-import { CustomerDocument } from '../models/customer.model';
+// import { CustomerDocument } from '../models/customer.model';
 import Invoice, {
   InvoiceDocument,
   InvoiceInput,
@@ -22,7 +22,7 @@ export const getInvoices = async (user: UserDocument | undefined) => {
   console.log('getInvoices, user:', user?.id);
   const populated = await user?.populate({
     path: 'invoices',
-    populate: { path: 'customer' },
+    populate: [{ path: 'customer' }, { path: 'user' }],
   });
   console.log('populated: ', JSON.stringify(populated));
   return populated?.invoices;
@@ -35,7 +35,7 @@ export const getSingleInvoice = async (
   const populated = await user?.populate({
     path: 'invoices',
     match: { _id: invoiceId },
-    populate: { path: 'customer' },
+    populate: [{ path: 'customer' }, { path: 'user' }],
   });
 
   logger.info(`getSingleInvoice: ${JSON.stringify(populated, null, 2)}`);
@@ -48,7 +48,7 @@ export const createInvoice = async (user: UserDocument, data: InvoiceInput) => {
   user.invoices = user.invoices.concat(invoice._id);
   await user.save();
 
-  return invoice.populate('customer');
+  return invoice.populate(['customer', 'user']);
 };
 
 export async function updateInvoiceById(id: string, data: object) {
@@ -95,7 +95,8 @@ export const editInvoiceById = async (
   const invoice = await Invoice.findOneAndUpdate({ _id: id }, data, {
     returnDocument: 'after',
     overwriteDiscriminatorKey: true,
-  }).populate<{ customer: CustomerDocument }>('customer');
+    // }).populate<{ customer: CustomerDocument }>('customer');
+  }).populate(['customer', 'user']);
 
   logger.info(`findOneAndUpdate returning: ${JSON.stringify(invoice)}`);
 

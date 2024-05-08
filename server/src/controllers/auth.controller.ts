@@ -28,8 +28,9 @@ export const loginHandler = async (
   // password is correct
 
   const userData = {
+    name: user.name,
     email: user.email,
-    id: user.id,
+    // id: user.id,
     sub: user.id,
   };
 
@@ -80,7 +81,8 @@ export const loginHandler = async (
 
   res.cookie('jwt', newRefreshToken, config.COOKIE_OPTIONS);
 
-  return res.json({ accessToken, email: user.email });
+  // return res.json({ accessToken, email: user.email });
+  return res.json({ accessToken });
 };
 
 export const logoutHandler = async (req: Request, res: Response) => {
@@ -168,8 +170,9 @@ export const refreshHandler = async (req: Request, res: Response) => {
   }
 
   const userData = {
+    name: foundUser.name,
     email: foundUser.email, // tutorial just uses username
-    id: foundUser.id,
+    // id: foundUser.id,
     sub: foundUser.id,
   };
 

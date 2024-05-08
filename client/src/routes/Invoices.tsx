@@ -26,10 +26,6 @@ export default function Invoices() {
     return <p>Something went wrong...</p>;
   }
 
-  if (isLoading) {
-    return <p>Loading...</p>;
-  }
-
   const invoices =
     filter === 'all' ? data : data?.filter((inv) => inv.status === filter);
 
@@ -59,8 +55,8 @@ export default function Invoices() {
               to="/invoices?filter=all"
               className={
                 filter === 'all'
-                  ? 'font-extrabold text-black underline underline-offset-[2rem] decoration-8'
-                  : 'font-extrabold text-zinc-400'
+                  ? 'font-extrabold text-nowrap text-black underline underline-offset-[2rem] decoration-8'
+                  : 'font-extrabold text-nowrap text-zinc-400'
               }
             >
               All invoices
@@ -69,8 +65,8 @@ export default function Invoices() {
               to="/invoices?filter=pending"
               className={
                 filter === 'pending'
-                  ? 'font-extrabold text-black underline underline-offset-[2rem] decoration-8'
-                  : 'font-extrabold text-zinc-400'
+                  ? 'font-extrabold text-nowrap text-black underline underline-offset-[2rem] decoration-8'
+                  : 'font-extrabold text-nowrap text-zinc-400'
               }
             >
               Pending
@@ -79,8 +75,8 @@ export default function Invoices() {
               to="/invoices?filter=paid"
               className={
                 filter === 'paid'
-                  ? 'font-extrabold text-black underline underline-offset-[2rem] decoration-8'
-                  : 'font-extrabold text-zinc-400'
+                  ? 'font-extrabold text-nowrap text-black underline underline-offset-[2rem] decoration-8'
+                  : 'font-extrabold text-nowrap text-zinc-400'
               }
             >
               Paid
@@ -89,8 +85,8 @@ export default function Invoices() {
               to="/invoices?filter=draft"
               className={
                 filter === 'draft'
-                  ? 'font-extrabold text-black underline underline-offset-[2rem] decoration-8'
-                  : 'font-bold text-zinc-400'
+                  ? 'font-extrabold text-nowrap text-black underline underline-offset-[2rem] decoration-8'
+                  : 'font-extrabold text-nowrap text-zinc-400'
               }
             >
               Draft
@@ -156,36 +152,44 @@ export default function Invoices() {
           </h3>
         </div>
       </div>
-      <ul className="flex flex-col gap-[2px] font-medium text-zinc-600">
-        {invoices?.map((inv) => (
-          <li key={inv.id}>
-            <Link
-              to={inv.id}
-              className="w-full bg-zinc-100 hover:bg-white px-6 py-4 grid grid-cols-5 gap-4"
-            >
-              <span aria-describedby="invoice-number">
-                <span className="text-zinc-400">#</span>{' '}
-                {formatInvoiceNumber(inv.invoiceNumber)}
-              </span>
-              <span aria-describedby="invoice-date">
-                {formatDate(inv.date)}
-              </span>
-              <span
-                aria-describedby="invoice-customer"
-                className="text-zinc-400"
+
+      {isLoading ? (
+        <div className="animate-pulse bg-white px-6 py-4 font-bold text-gray-500">
+          Loading...
+        </div>
+      ) : (
+        <ul className="flex flex-col gap-[2px] font-medium text-zinc-600">
+          {invoices?.map((inv) => (
+            <li key={inv.id}>
+              <Link
+                to={inv.id}
+                className="w-full bg-zinc-100 hover:bg-white px-6 py-4 grid grid-cols-5 gap-4"
               >
-                {inv.customer?.name}
-              </span>
-              <span aria-describedby="invoice-total" className="text-end">
-                {formatCurrency(inv.total)}
-              </span>
-              <span aria-describedby="invoice-status" className="text-end">
-                <StatusPill status={inv.status} />
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+                <span aria-describedby="invoice-number">
+                  <span className="text-zinc-400">#</span>{' '}
+                  {formatInvoiceNumber(inv.invoiceNumber)}
+                </span>
+                <span aria-describedby="invoice-date">
+                  {formatDate(inv.date)}
+                </span>
+                <span
+                  aria-describedby="invoice-customer"
+                  className="text-zinc-400"
+                >
+                  {inv.customer?.name}
+                </span>
+                <span aria-describedby="invoice-total" className="text-end">
+                  {formatCurrency(inv.total)}
+                </span>
+                <span aria-describedby="invoice-status" className="text-end">
+                  <StatusPill status={inv.status} />
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+
       <div className="h-6 bg-zinc-100 rounded-b-xl mt-[2px] mb-20"></div>
       {/* <pre>{JSON.stringify(data, null, 2)}</pre> */}
     </div>

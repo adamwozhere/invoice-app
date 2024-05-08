@@ -1,6 +1,8 @@
 import InvoiceForm from '../components/InvoiceForm';
 import { InvoiceItem } from '../schemas/invoice.schema';
 
+// TODO: find out why create invoice form handler doesn't always fire???
+
 export default function NewInvoice() {
   return (
     <div className="max-w-5xl w-full">
@@ -19,3 +21,4 @@ export default function NewInvoice() {
     </div>
   );
 }
+

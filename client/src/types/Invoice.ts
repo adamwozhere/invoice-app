@@ -1,5 +1,6 @@
 import { Customer } from './Customer';
 import { Address } from './Address';
+import { User } from './User';
 
 export type Item = {
   quantity: number;
@@ -20,7 +21,7 @@ export type Invoice = {
   total: number;
   due: string;
   id: string;
-  user: string;
+  user: User;
 };
 
 export interface PartialInvoice {

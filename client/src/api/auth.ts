@@ -1,10 +1,8 @@
 import axios from 'axios';
+import { Auth } from '../types/Auth';
 
 export async function loginUser(email: string, password: string) {
-  const res = await axios.post<{ email: string; accessToken: string }>(
-    '/auth/login',
-    { email, password }
-  );
+  const res = await axios.post<Auth>('/auth/login', { email, password });
   return res.data;
 }
 

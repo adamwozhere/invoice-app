@@ -9,6 +9,7 @@ export const createUser = async (input: CreateUserInput['body']) => {
   const user = await User.create({
     name: input.name,
     email: input.email,
+    address: input.address,
     passwordHash,
   });
 

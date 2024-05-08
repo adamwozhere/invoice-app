@@ -33,13 +33,13 @@ export default function Modal({
   }
 
   return (
-    <dialog ref={dialogRef}>
-      <div>
-        <h1>{title}</h1>
+    <dialog ref={dialogRef} className="rounded-xl">
+      <div className="bg-white p-8">
+        <h1 className="text-lg font-bold mb-4">{title}</h1>
         {children}
-        <div>
+        <div className="flex gap-2 mt-8">
           <Button label="Cancel" onClick={closeDialog} />
-          <Button label="Confirm" onClick={confirmDialog} />
+          <Button label="Delete" onClick={confirmDialog} />
         </div>
       </div>
     </dialog>

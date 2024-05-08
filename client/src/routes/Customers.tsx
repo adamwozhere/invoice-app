@@ -10,10 +10,6 @@ export default function Customers() {
     return <p>Something went wrong...</p>;
   }
 
-  if (isLoading) {
-    return <p>Loading...</p>;
-  }
-
   return (
     <div className="max-w-5xl w-full">
       <div className="sticky top-0 bg-gray-200">
@@ -41,21 +37,30 @@ export default function Customers() {
           </h3>
         </div>
       </div>
-      <ul className="flex flex-col gap-[2px] font-medium text-zinc-600">
-        {data?.map((cust) => (
-          <li key={cust.id}>
-            <Link
-              to={cust.id}
-              className="w-full bg-zinc-100 hover:bg-white px-6 py-4 grid grid-cols-5 gap-4"
-            >
-              <span aria-describedby="customer-name">{cust.name}</span>
-              <span aria-describedby="customer-email" className="text-zinc-400">
-                {cust.email}
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      {isLoading ? (
+        <div className="animate-pulse bg-white px-6 py-4 font-bold text-gray-500">
+          Loading...
+        </div>
+      ) : (
+        <ul className="flex flex-col gap-[2px] font-medium text-zinc-600">
+          {data?.map((cust) => (
+            <li key={cust.id}>
+              <Link
+                to={cust.id}
+                className="w-full bg-zinc-100 hover:bg-white px-6 py-4 grid grid-cols-5 gap-4"
+              >
+                <span aria-describedby="customer-name">{cust.name}</span>
+                <span
+                  aria-describedby="customer-email"
+                  className="text-zinc-400"
+                >
+                  {cust.email}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
       <div className="h-6 bg-zinc-100 rounded-b-xl mt-[2px] mb-20"></div>
     </div>
   );

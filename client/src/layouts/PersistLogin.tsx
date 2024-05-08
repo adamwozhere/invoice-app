@@ -15,8 +15,9 @@ export default function PersistLogin() {
     const refreshAuthOnFirstMount = async () => {
       try {
         const token = await refreshAccessToken();
-        const decoded = jwtDecode<{ email: string }>(token);
+        const decoded = jwtDecode<{ name: string; email: string }>(token);
         setUser({
+          name: decoded.name,
           email: decoded.email,
           accessToken: token,
           isAuthenticated: true,
