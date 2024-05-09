@@ -698,7 +698,17 @@ describe('invoice', () => {
         invoiceNumber: expect.any(Number),
         items: [],
         total: 0,
-        user: expect.any(Object),
+        user: {
+          name: 'Sherlock Holmes',
+          email: 'sherlock@baker-st.com',
+          address: {
+            line1: '22B Baker St',
+            line2: 'Marylebone',
+            city: 'London',
+            postcode: 'NW1 6XE',
+          },
+          id: expect.any(String),
+        },
       });
     });
   });
@@ -742,7 +752,7 @@ describe('invoice', () => {
           status: 'draft',
           customer: null,
           items: [{ quantity: 1, description: 'Item 1', amount: 0.9 }],
-          user: expect.any(Object),
+          user: invoice.user,
           id: invoice.id,
         })
         .expect(200);
@@ -764,7 +774,17 @@ describe('invoice', () => {
           },
         ],
         total: 0.9,
-        user: expect.any(Object),
+        user: {
+          name: 'Sherlock Holmes',
+          email: 'sherlock@baker-st.com',
+          address: {
+            line1: '22B Baker St',
+            line2: 'Marylebone',
+            city: 'London',
+            postcode: 'NW1 6XE',
+          },
+          id: expect.any(String),
+        },
         id: invoice.id,
       });
     });
