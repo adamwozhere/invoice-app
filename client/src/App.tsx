@@ -9,7 +9,7 @@ import { Route, Routes } from 'react-router-dom';
 import AuthProvider from './providers/AuthProvider';
 import Layout from './layouts/Layout';
 import Index from './routes/Index';
-import Login from './routes/Login';
+
 import Invoices from './routes/Invoices';
 import Invoice from './routes/Invoice';
 import Customers from './routes/Customers';
@@ -26,6 +26,7 @@ import NotFound from './routes/NotFound';
 import Signup from './routes/Signup';
 import PersistLogin from './layouts/PersistLogin';
 import IntroLayout from './layouts/IntroLayout';
+import Login from './routes/Login';
 
 // create Query Client
 const queryClient = new QueryClient({
