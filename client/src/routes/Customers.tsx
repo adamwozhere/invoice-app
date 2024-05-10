@@ -1,7 +1,8 @@
-import { Link, NavLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useCustomers } from '../hooks/useCustomers';
 import PlusIcon from '../components/icons/PlusIcon';
 import SortIcon from '../components/icons/SortIcon';
+import Button from '../components/ui/Button';
 
 export default function Customers() {
   const { data, error, isLoading } = useCustomers();
@@ -15,13 +16,13 @@ export default function Customers() {
       <div className="sticky top-0 bg-gray-200">
         <div className="bg-white rounded-b-xl px-6 py-2 pt-8 mb-6">
           <h1 className="text-3xl font-extrabold text-zinc-600">Customers</h1>
-          <div className="flex items-center gap-8 my-4 mt-8">
-            <NavLink
+          <div className="flex items-center justify-end gap-8 my-4 mt-8">
+            <Button
+              as="link"
               to="new"
-              className="ml-auto inline-flex h-10 px-4 py-2 items-center justify-center whitespace-nowrap rounded-lg text-md font-bold bg-green-400 text-black hover:bg-opacity-70 transition-colors"
-            >
-              <PlusIcon /> New customer
-            </NavLink>
+              label="New customer"
+              iconLeft={<PlusIcon />}
+            />
           </div>
         </div>
         <div className="grid grid-cols-5 px-6 py-4 font-bold bg-white text-zinc-400 text-xs gap-4 mb-[2px] uppercase rounded-t-xl border-b-2 border-gray-200">

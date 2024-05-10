@@ -1,12 +1,8 @@
 // import { useQuery } from '@tanstack/react-query';
 // import { getCustomer } from '../api/customers';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 import { useCustomers } from '../hooks/useCustomers';
-import { useEditCustomer } from '../hooks/useEditCustomer';
-import { useForm } from 'react-hook-form';
-import { CustomerInput, customerSchema } from '../schemas/customer.schema';
-import { zodResolver } from '@hookform/resolvers/zod';
 import CustomerForm from '../components/CustomerForm';
 
 export default function EditCustomer() {
@@ -18,30 +14,7 @@ export default function EditCustomer() {
 
   const { data, error, isLoading } = useCustomers(customerId);
 
-  const navigate = useNavigate();
-  const { mutate: editCustomer } = useEditCustomer();
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<CustomerInput>({
-    resolver: zodResolver(customerSchema),
-    defaultValues: data,
-  });
-
-  // TODO: find best way of asserting that data will have an id
-  const onSubmit = (data: CustomerInput) => {
-    editCustomer(
-      { customerId, data: { ...data, id: data.id! } },
-      {
-        onSuccess: () => {
-          reset();
-          navigate(`/customers/${customerId}`);
-        },
-      }
-    );
-  };
+  console.log('the customer data is', data);
 
   if (error) {
     return <p>Something went wrong...</p>;
@@ -52,18 +25,11 @@ export default function EditCustomer() {
   }
 
   return (
-    <div>
-      <h1>Edit Customer</h1>
-      <CustomerForm
-        onSubmit={(event) => {
-          event.preventDefault();
-          void handleSubmit(onSubmit)(event);
-        }}
-        register={register}
-        errors={errors}
-        submitLabel="Save"
-      />
-      <pre>{JSON.stringify(data, null, 2)}</pre>
+    <div className="max-w-5xl w-full">
+      <div className="bg-white rounded-b-xl px-6 py-8 mb-6">
+        <h1 className="text-3xl font-extrabold text-zinc-600">Edit Customer</h1>
+      </div>
+      <CustomerForm type="EditCustomer" defaultValues={data} />
     </div>
   );
 }

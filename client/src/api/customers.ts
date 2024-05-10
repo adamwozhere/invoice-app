@@ -1,6 +1,7 @@
 import axios from 'axios';
 import type { Customer } from '../types/Customer';
 import type { QueryFunctionContext } from '@tanstack/react-query';
+// import { CustomerInput } from '../schemas/customer.schema';
 
 export async function getCustomers({
   queryKey,
@@ -20,8 +21,16 @@ export async function createCustomer(data: Omit<Customer, 'id'>) {
   return res.data;
 }
 
-export async function editCustomer(customerId: string, data: Customer) {
+export async function editCustomer({
+  customerId,
+  data,
+}: {
+  customerId: string;
+  data: Customer;
+}) {
+  console.log('editCustomer sending data:', customerId, data);
   const res = await axios.put<Customer>(`/api/customers/${customerId}`, data);
+  console.log('editCustomer returning data:', res);
   return res.data;
 }
 

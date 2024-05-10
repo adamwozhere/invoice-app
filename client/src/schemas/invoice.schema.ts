@@ -63,6 +63,8 @@ export const invoiceSchema = z.object({
   id: z.string().optional(),
 });
 
+// TODO: check if these area actually used anywhere, of if it is just InvoiceFormValues now
+
 // export type InvoiceInput = z.infer<typeof invoiceSchema>;
 export type InvoiceInput = {
   date: Date;

@@ -6,7 +6,7 @@ import { useDeleteCustomer } from '../hooks/useDeleteCustomer';
 import toast from 'react-hot-toast';
 import { useState } from 'react';
 import Modal from '../components/ui/Modal';
-import BackButton from '../components/ui/BackButton';
+// import BackButton from '../components/ui/BackButton';
 import BackIcon from '../components/icons/BackIcon';
 import Button from '../components/ui/Button';
 
@@ -41,14 +41,22 @@ export default function Customer() {
     <div className="max-w-5xl w-full">
       <div className="sticky top-0 bg-gray-200">
         <div className="bg-white rounded-b-xl px-6 py-2 pt-7 mb-6">
-          <BackButton to="/customers" label="Back" icon={<BackIcon />} />
+          {/* <BackButton to="/customers" label="Back" icon={<BackIcon />} /> */}
+          <Button
+            as="link"
+            to="/customers"
+            label="Back"
+            iconLeft={<BackIcon />}
+            variant="ghost"
+          />
           {isLoading ? (
             <div className="h-20 mt-2"></div>
           ) : (
-            <div className="flex items-center justify-end gap-2 my-4 mt-8">
-              <Button label="Edit" />
+            <div className="flex items-center justify-end gap-4 my-4 mt-8">
+              <Button as="link" to="edit" label="Edit" variant="tertiary" />
               <Button
                 label="Delete"
+                variant="danger"
                 onClick={() => setModalOpen(true)}
                 disabled={isPending}
               />

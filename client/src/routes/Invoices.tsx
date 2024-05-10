@@ -7,6 +7,7 @@ import formatInvoiceNumber from '../utils/formatInvoiceNumber';
 import SortIcon from '../components/icons/SortIcon';
 import Invoice from './Invoice';
 import PlusIcon from '../components/icons/PlusIcon';
+import Button from '../components/ui/Button';
 // import Button from '../components/ui/Button';
 
 export default function Invoices() {
@@ -85,18 +86,18 @@ export default function Invoices() {
               to="/invoices?filter=draft"
               className={
                 filter === 'draft'
-                  ? 'font-extrabold text-nowrap text-black underline underline-offset-[2rem] decoration-8'
-                  : 'font-extrabold text-nowrap text-zinc-400'
+                  ? 'font-extrabold text-nowrap text-black underline underline-offset-[2rem] decoration-8 mr-auto'
+                  : 'font-extrabold text-nowrap text-zinc-400 mr-auto'
               }
             >
               Draft
             </NavLink>
-            <NavLink
+            <Button
+              as="link"
               to="new"
-              className="ml-auto inline-flex h-10 px-4 py-2 items-center justify-center whitespace-nowrap rounded-lg text-md font-bold bg-green-400 text-black hover:bg-opacity-70 transition-colors"
-            >
-              <PlusIcon /> New invoice
-            </NavLink>
+              label="New invoice"
+              iconLeft={<PlusIcon />}
+            />
           </div>
         </div>
         <div className="grid grid-cols-5 px-6 py-4 font-bold bg-white text-zinc-400 text-xs gap-4 mb-[2px] uppercase rounded-t-xl border-b-2 border-gray-200">

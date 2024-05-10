@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { useEditInvoice } from '../hooks/useEditInvoice';
 import { useState } from 'react';
 import Modal from '../components/ui/Modal';
-import BackButton from '../components/ui/BackButton';
+// import BackButton from '../components/ui/BackButton';
 import BackIcon from '../components/icons/BackIcon';
 import formatCurrency from '../utils/formatCurrency';
 import StatusPill from '../components/ui/StatusPill';
@@ -66,12 +66,19 @@ export default function Invoice() {
     <div className="max-w-5xl w-full">
       <div className="sticky top-0 bg-gray-200">
         <div className="bg-white rounded-b-xl px-6 py-2 pt-7 mb-6">
-          <BackButton to="/invoices" label="Back" icon={<BackIcon />} />
+          {/* <BackButton to="/invoices" label="Back" icon={<BackIcon />} /> */}
+          <Button
+            as="link"
+            to="/invoices"
+            label="Back"
+            iconLeft={<BackIcon />}
+            variant="ghost"
+          />
 
           {isLoading ? (
             <div className="h-20 mt-2"></div>
           ) : (
-            <div className="flex items-center gap-2 my-4 mt-8">
+            <div className="flex items-center gap-4 my-4 mt-8">
               <div className="mr-auto">
                 <StatusPill status={data!.status} />
               </div>
@@ -79,9 +86,10 @@ export default function Invoice() {
               {data?.status === 'pending' ? (
                 <Button label="Mark as paid" onClick={handleMarkAsPaid} />
               ) : null}
-              <Button label="Edit" />
+              <Button as="link" to="edit" label="Edit" variant="tertiary" />
               <Button
                 label="Delete"
+                variant="danger"
                 onClick={() => setModalOpen(true)}
                 disabled={isPending}
               />
@@ -120,15 +128,15 @@ export default function Invoice() {
                 <br />
                 {data?.user?.email}
                 <br />
-                {data?.user?.address.line1}
+                {data?.user?.address?.line1}
                 <br />
-                {data?.user?.address.line2}
+                {data?.user?.address?.line2}
                 <br />
-                {data?.user?.address.city}
+                {data?.user?.address?.city}
                 <br />
-                {data?.user?.address.county}
+                {data?.user?.address?.county}
                 <br />
-                {data?.user?.address.postcode}
+                {data?.user?.address?.postcode}
               </address>
             </div>
           </div>
@@ -154,15 +162,15 @@ export default function Invoice() {
                 <br />
                 {data?.customer?.email}
                 <br />
-                {data?.customer?.address.line1}
+                {data?.customer?.address?.line1}
                 <br />
-                {data?.customer?.address.line2}
+                {data?.customer?.address?.line2}
                 <br />
-                {data?.customer?.address.city}
+                {data?.customer?.address?.city}
                 <br />
-                {data?.customer?.address.county}
+                {data?.customer?.address?.county}
                 <br />
-                {data?.customer?.address.postcode}
+                {data?.customer?.address?.postcode}
                 <br />
               </address>
             </div>

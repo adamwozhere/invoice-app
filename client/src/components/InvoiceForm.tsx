@@ -240,13 +240,13 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
               void methods.handleSubmit(onSubmit)(event);
             }}
           >
-            <input type="text" hidden disabled {...methods.register('id')} />
+            {/* <input type="text" hidden disabled {...methods.register('id')} />
             <input
               type="text"
               hidden
               disabled
               {...methods.register('status')}
-            />
+            /> */}
             <div className="flex w-full gap-8">
               <FormInput
                 label="Invoice date"
@@ -318,7 +318,7 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
                       />
                       {/* <div>{field.amount * field.quantity}</div> */}
                       <div className="w-1/5">
-                        <div className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                        <div className="flex w-full border-2 h-10 px-4 py-2 rounded-md text-sm">
                           {(
                             watchItems![index].amount! *
                             watchItems![index].quantity!
@@ -337,7 +337,7 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
                 })}
                 <div className="flex w-full justify-end items-center gap-4">
                   <button
-                    className="flex px-1 py-2 h-10 gap-1 text-sm items-center mr-auto text-green-600 font-extrabold hover:text-black"
+                    className="flex py-2 h-10 gap-1 text-sm items-center mr-auto text-green-600 font-extrabold hover:text-black"
                     onClick={(e) => {
                       e.preventDefault();
                       append({
@@ -377,7 +377,11 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
                     onClick={onSaveDraft}
                     label="Save as draft"
                   />
-                  <Button type="submit" label="Create invoice" />
+                  <Button
+                    type="submit"
+                    label="Create invoice"
+                    disabled={selectedCustomer === 'new'}
+                  />
                 </>
               ) : null}
               {type === 'EditInvoice' && isDraftInvoice ? (
@@ -402,7 +406,11 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
                     variant="tertiary"
                     label="Cancel"
                   />
-                  <Button type="submit" label="Save changes" />
+                  <Button
+                    type="submit"
+                    label="Save changes"
+                    disabled={selectedCustomer === 'new'}
+                  />
                 </>
               ) : null}
             </div>

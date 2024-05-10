@@ -79,6 +79,8 @@ export interface InvoiceFormValues {
   id?: string;
 }
 
+// TODO: below not impletmented / needed?
+
 // interface for a draft invoice - could be an edited invoice or a new draft invoice
 export interface DraftInvoice {}
 

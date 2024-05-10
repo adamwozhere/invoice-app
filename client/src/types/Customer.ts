@@ -7,3 +7,4 @@ export type Customer = {
   id: string;
 };
 
+export type CustomerFormValues = {};

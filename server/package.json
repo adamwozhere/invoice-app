@@ -2,9 +2,10 @@
   "name": "server",
   "version": "1.0.0",
   "description": "Invoice app server",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
+    "build:full": "npm run build && cd ../client && npm run build && cp -r dist ../server/dist",
     "dev": "ts-node-dev --transpile-only src/index.ts",
     "lint": "eslint . --ext .ts",
     "start": "node dist/index.js",
@@ -45,3 +46,4 @@
     "zod": "^3.22.4"
   }
 }
+

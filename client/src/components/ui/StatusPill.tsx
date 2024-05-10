@@ -4,9 +4,9 @@ type Props = {
 
 export default function StatusPill({ status }: Props) {
   const colors: Record<string, string> = {
-    pending: 'bg-orange-100 text-orange-400',
-    draft: 'bg-slate-200 text-slate-400',
-    paid: 'bg-lime-300 text-lime-600',
+    pending: 'bg-orange-400/30 text-orange-500',
+    draft: 'bg-slate-500/30 text-slate-500',
+    paid: 'bg-green-500/30 text-green-600',
   };
 
   return (
