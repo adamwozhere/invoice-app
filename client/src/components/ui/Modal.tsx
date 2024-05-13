@@ -38,8 +38,8 @@ export default function Modal({
         <h1 className="text-lg font-bold mb-4">{title}</h1>
         {children}
         <div className="flex gap-2 mt-8">
-          <Button label="Cancel" onClick={closeDialog} />
-          <Button label="Delete" onClick={confirmDialog} />
+          <Button label="Cancel" variant="tertiary" onClick={closeDialog} />
+          <Button label="Delete" variant="danger" onClick={confirmDialog} />
         </div>
       </div>
     </dialog>
