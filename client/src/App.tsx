@@ -5,11 +5,12 @@ import {
 } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Route, Routes } from 'react-router-dom';
+
+import type { HttpError } from './types/HttpError';
 // routes
 import AuthProvider from './providers/AuthProvider';
 import Layout from './layouts/Layout';
 import Index from './routes/Index';
-
 import Invoices from './routes/Invoices';
 import Invoice from './routes/Invoice';
 import Customers from './routes/Customers';
@@ -18,8 +19,6 @@ import EditInvoice from './routes/EditInvoice';
 import Customer from './routes/Customer';
 import EditCustomer from './routes/EditCustomer';
 import NewCustomer from './routes/NewCustomer';
-
-import type { HttpError } from './types/HttpError';
 import NewInvoice from './routes/NewInvoice';
 import Error from './routes/Error';
 import NotFound from './routes/NotFound';
