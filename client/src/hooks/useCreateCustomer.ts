@@ -1,7 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { createCustomer } from '../api/customers';
+
 // import { Customer } from '../types/Customer';
+
+//TODO: check these mutations are written correctly in terms of optomistic updates
 
 export function useCreateCustomer() {
   const queryClient = useQueryClient();

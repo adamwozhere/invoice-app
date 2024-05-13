@@ -1,7 +1,7 @@
 import { DevTool } from '@hookform/devtools';
-import { FormProvider, useFieldArray, useForm } from 'react-hook-form';
+
 import { useCustomers } from '../hooks/useCustomers';
-import CustomerSelect from './CustomerSelect';
+
 import { FormInput } from './ui/FormInput';
 import Button from './ui/Button';
 import {
@@ -18,8 +18,16 @@ import toast from 'react-hot-toast';
 import DeleteIcon from './icons/DeleteIcon';
 import formatCurrency from '../utils/formatCurrency';
 import PlusIcon from './icons/PlusIcon';
+import { Customer } from '../types/Customer';
+import { useCreateCustomer } from '../hooks/useCreateCustomer';
+import { customerSchema } from '../schemas/customer.schema';
 
-// TODO: implement backend saving as draft (optional fields)
+import { Select } from './ui/Select';
+import { useFieldArray, useForm } from 'react-hook-form';
+
+// TODO: disallow multiple submitions!
+// TODO: allow enter to submit main form
+// TODO: check form schema for name, that it matches input length of server schema
 
 // TODO: note on react-hook-form void returns for attributes:
 /**
@@ -49,16 +57,22 @@ type Props = {
 export default function InvoiceForm({ type, defaultValues }: Props) {
   const navigate = useNavigate();
   const { data: customers } = useCustomers();
-  const { mutate: createInvoice } = useCreateInvoice();
-  const { mutate: editInvoice } = useEditInvoice();
+  const { mutate: createInvoice, isPending: isPendingCreateInvoice } =
+    useCreateInvoice();
+  const { mutate: editInvoice, isPending: isPendingEditInvoice } =
+    useEditInvoice();
+  const { mutate: createCustomer, isPending: isPendingCreateCustomer } =
+    useCreateCustomer();
 
   if (!defaultValues.customer) {
     defaultValues.customer = '';
   }
 
+  const customerForm = useForm<Customer>({
+    resolver: zodResolver(customerSchema),
+  });
+
   const methods = useForm<InvoiceFormValues>({
-    // TODO: this seems to be working - but problems with treating empty string as zero:
-    // look into zod coersion vs form { valueAsNumber }
     resolver: (values, context, options) => {
       const schema =
         values.status === 'draft' ? draftInvoiceSchema : invoiceSchema;
@@ -69,9 +83,30 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
 
   const { errors } = methods.formState;
 
+  const customerOptions: [string, string][] | undefined = customers?.map(
+    (cust) => [cust.id, cust.name]
+  );
+  customerOptions?.unshift(['null', '-select customer-']);
+  customerOptions?.push(['new', '-new customer-']);
+
+  // TODO: fix why customer doesn't update when you create a new customer
+  // const [newCustomer, setNewCustomer] = useState<string>('null');
+
+  // useEffect(() => {
+  //   methods.setValue('customer', newCustomer);
+  // }, [methods, newCustomer]);
+
   // watch customer to toggle newCustomer form inputs
   const selectedCustomer = methods.watch('customer') ?? 'null';
   // watch status to switch draft / save as buttons depending on status
+
+  // const watchCustomer = methods.watch('customer');
+
+  // useEffect(() => {
+  //   if (watchCustomer !== '') {
+  //     methods.setValue('customer', watchCustomer);
+  //   }
+  // }, [methods, watchCustomer]);
 
   // base isDraftInvoice on the default values to conditionally render Create Invoice button,
   // otherwise when clicking, the button will disappear as the status has been set to pending!
@@ -90,6 +125,13 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
   const onCancel = (e: React.SyntheticEvent) => {
     e.preventDefault();
     navigate(-1);
+  };
+
+  const onCancelNewCustomer = (e: React.SyntheticEvent) => {
+    console.log('onCancelNewCustomer');
+    e.preventDefault();
+    methods.setValue('customer', 'null');
+    customerForm.reset();
   };
 
   const onSubmit = (data: InvoiceFormValues) => {
@@ -227,31 +269,41 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
     }
   };
 
+  const customerSubmit = (data: Customer) => {
+    console.log('customerSubmit');
+    createCustomer(data, {
+      onSuccess: (customer: Customer) => {
+        customerForm.reset();
+        toast.success('Customer added');
+        console.log('created customer with id:', customer.id);
+        setTimeout(() => methods.setValue('customer', customer.id), 0);
+        // setNewCustomer(customer.id);
+      },
+      onError: (err) => {
+        toast.error('Could not create customer - try again');
+        console.error(err);
+      },
+    });
+  };
+
   return (
     <div className="w-full">
-      <FormProvider {...methods}>
-        <div className="bg-white px-6 py-8 rounded-xl">
+      <div className="bg-white px-6 py-8 rounded-xl">
+        {selectedCustomer !== 'new' && (
           <form
+            id="invoice-form"
             className="flex flex-col w-full"
             noValidate
             onSubmit={(event) => {
               event.preventDefault();
-              // methods.setValue('status', 'pending');
               void methods.handleSubmit(onSubmit)(event);
             }}
           >
-            {/* <input type="text" hidden disabled {...methods.register('id')} />
-            <input
-              type="text"
-              hidden
-              disabled
-              {...methods.register('status')}
-            /> */}
             <div className="flex w-full gap-8">
               <FormInput
                 label="Invoice date"
                 type="date"
-                {...methods.register('date')} // valueAsDate: true
+                {...methods.register('date')}
                 defaultValue={
                   defaultValues.date ??
                   new Date().toISOString().substring(0, 10)
@@ -265,8 +317,14 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
                 {...methods.register('paymentTerms')}
               />
             </div>
-            <CustomerSelect customers={customers} selected={selectedCustomer} />
-            <div className="mt-8 w-full">
+            <Select
+              options={customerOptions}
+              label="Customer"
+              {...methods.register('customer')}
+            />
+
+            <div className="w-full">
+              {/* <h3 className="font-bold mb-4">Items</h3> */}
               <div className="flex gap-4 text-sm font-bold">
                 <label id="labelQuantity" className="w-1/5 mb-1">
                   Quantity
@@ -316,7 +374,6 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
                         aria-describedby="labelAmount"
                         error={errors.items && errors.items[index]?.amount}
                       />
-                      {/* <div>{field.amount * field.quantity}</div> */}
                       <div className="w-1/5">
                         <div className="flex w-full border-2 h-10 px-4 py-2 rounded-md text-sm">
                           {(
@@ -326,6 +383,7 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
                         </div>
                       </div>
                       <button
+                        type="button"
                         className="flex h-10 items-center text-slate-400 hover:text-black"
                         aria-label="Delete item"
                         onClick={(e) => onDeleteItem(e, index)}
@@ -337,6 +395,7 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
                 })}
                 <div className="flex w-full justify-end items-center gap-4">
                   <button
+                    type="button"
                     className="flex py-2 h-10 gap-1 text-sm items-center mr-auto text-green-600 font-extrabold hover:text-black"
                     onClick={(e) => {
                       e.preventDefault();
@@ -376,11 +435,12 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
                     variant="secondary"
                     onClick={onSaveDraft}
                     label="Save as draft"
+                    disabled={isPendingCreateInvoice}
                   />
                   <Button
                     type="submit"
                     label="Create invoice"
-                    disabled={selectedCustomer === 'new'}
+                    disabled={isPendingCreateInvoice}
                   />
                 </>
               ) : null}
@@ -395,8 +455,13 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
                     onClick={onSaveChanges}
                     variant="secondary"
                     label="Save changes"
+                    disabled={isPendingEditInvoice}
                   />
-                  <Button type="submit" label="Create invoice" />
+                  <Button
+                    type="submit"
+                    label="Create invoice"
+                    disabled={isPendingCreateInvoice}
+                  />
                 </>
               ) : null}
               {type === 'EditInvoice' && !isDraftInvoice ? (
@@ -409,14 +474,75 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
                   <Button
                     type="submit"
                     label="Save changes"
-                    disabled={selectedCustomer === 'new'}
+                    disabled={isPendingEditInvoice}
                   />
                 </>
               ) : null}
             </div>
           </form>
-        </div>
-      </FormProvider>
+        )}
+
+        {selectedCustomer === 'new' && (
+          <form
+            noValidate
+            onSubmit={(event) => {
+              event.preventDefault();
+              void customerForm.handleSubmit(customerSubmit)(event);
+            }}
+          >
+            <h2 className="font-bold mb-4">Add new customer</h2>
+            <FormInput
+              {...customerForm.register('name')}
+              label="Name"
+              error={customerForm.formState.errors.name}
+            />
+            <FormInput
+              {...customerForm.register('email')}
+              label="Email"
+              type="email"
+              error={customerForm.formState.errors.email}
+            />
+            <FormInput
+              {...customerForm.register('address.line1')}
+              label="Address line 1"
+              error={customerForm.formState.errors.address?.line1}
+            />
+            <FormInput
+              {...customerForm.register('address.line2')}
+              label="Address line 2 (optional)"
+              error={customerForm.formState.errors.address?.line2}
+            />
+            <FormInput
+              {...customerForm.register('address.city')}
+              label="City / Town"
+              error={customerForm.formState.errors.address?.city}
+            />
+            <FormInput
+              {...customerForm.register('address.county')}
+              label="County (optional)"
+              error={customerForm.formState.errors.address?.county}
+            />
+            <FormInput
+              {...customerForm.register('address.postcode')}
+              label="Postcode"
+              error={customerForm.formState.errors.address?.postcode}
+            />
+            <div className="flex gap-4 mt-8">
+              <Button
+                label="Cancel"
+                onClick={onCancelNewCustomer}
+                variant="tertiary"
+              />
+              <Button
+                label="Add customer"
+                type="submit"
+                disabled={isPendingCreateCustomer}
+              />
+            </div>
+          </form>
+        )}
+      </div>
+
       <DevTool control={methods.control} />
     </div>
   );

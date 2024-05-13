@@ -56,6 +56,7 @@ export default function Button({
   return (
     <button
       {...props}
+      type={props.type ?? 'button'}
       className={clsx(
         'inline-flex items-center justify-center gap-2 h-10 px-4 py-2 whitespace-nowrap rounded-lg text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible ring-gray-400',
         variants[variant]
