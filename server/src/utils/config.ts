@@ -1,5 +1,6 @@
-import { z } from 'zod';
 import dotenv from 'dotenv';
+import { z } from 'zod';
+import { CorsOptions } from 'cors';
 dotenv.config();
 
 const dotEnvSchema = z.object({
@@ -23,8 +24,9 @@ const COOKIE_OPTIONS = {
   maxAge: 60 * 60 * 24 * 365, // 1 year
 };
 
-const CORS_OPTIONS = {
+const CORS_OPTIONS: CorsOptions = {
   origin: ['https://mint-invoicing.onrender.com', 'http://localhost:4173'],
+  credentials: true,
 };
 
 const config = {
