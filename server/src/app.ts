@@ -18,7 +18,7 @@ import requestLogger from './middleware/requestLogger';
 import errorHandler from './middleware/errorHandler';
 
 const app = express();
-app.use(cors());
+app.use(cors(config.CORS_OPTIONS));
 app.use(cookieParser());
 app.use(express.json());
 app.use(requestLogger);
@@ -28,8 +28,8 @@ app.use(requestLogger);
 
 void db.connect();
 
-// static frontend
-app.use(express.static(config.FRONTEND_PATH));
+// static frontend - no longer used
+// app.use(express.static(config.FRONTEND_PATH));
 
 // healthcheck
 app.get('/api/status', (_, res) => {

@@ -9,6 +9,7 @@ const dotEnvSchema = z.object({
   REFRESH_TOKEN_SECRET: z.string().min(1),
 });
 
+// frontend path no longer needed as deploying on separate instances
 const FRONTEND_PATH = '../frontend';
 const ACCESS_TOKEN_TTL = '10m'; // 10 mins
 const REFRESH_TOKEN_TTL = '1y'; // 1 year
@@ -22,12 +23,17 @@ const COOKIE_OPTIONS = {
   maxAge: 60 * 60 * 24 * 365, // 1 year
 };
 
+const CORS_OPTIONS = {
+  origin: ['https://mint-invoicing-api.onrender.com', 'http://localhost:4173'],
+};
+
 const config = {
   ...dotEnvSchema.parse(process.env),
   FRONTEND_PATH,
   ACCESS_TOKEN_TTL,
   REFRESH_TOKEN_TTL,
   COOKIE_OPTIONS,
+  CORS_OPTIONS,
 } as const;
 
 export default config;
