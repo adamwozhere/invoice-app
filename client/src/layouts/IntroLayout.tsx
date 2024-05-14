@@ -1,5 +1,6 @@
 import { Toaster } from 'react-hot-toast';
 import { Outlet } from 'react-router-dom';
+import ApiStatus from '../components/ApiStatus';
 
 export default function IntroLayout() {
   return (
@@ -41,7 +42,9 @@ export default function IntroLayout() {
           </p>
         </div>
       </div>
-      <main className="flex bg-gray-200 w-2/3 pl-[10%]">
+      {/* <main className="flex bg-gray-200 w-2/3 pl-[10%]"> */}
+      <main className="flex flex-col bg-gray-200 w-2/3 pl-[10%]">
+        <ApiStatus />
         <Outlet />
       </main>
     </div>
