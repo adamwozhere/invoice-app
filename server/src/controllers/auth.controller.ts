@@ -70,7 +70,7 @@ export const loginHandler = async (
     }
 
     // clear cookie
-    res.clearCookie('jwt');
+    res.clearCookie('__Host-jwt');
   }
 
   user.refreshToken = [...newRefreshTokenArray, newRefreshToken];
@@ -83,7 +83,7 @@ export const loginHandler = async (
   // TRY PARTITIONED COOKIE
   res.setHeader(
     'Set-Cookie',
-    `__Host-jwt=${newRefreshToken}; Max-Age=31536; Path=/; Expires=Wed, 15 May 2024 00:45:09 GMT; HttpOnly; Secure; SameSite=None; Partitioned;`
+    `__Host-jwt=${newRefreshToken}; Max-Age=${config.COOKIE_OPTIONS.maxAge}; Path=/; HttpOnly; Secure; SameSite=None; Partitioned;`
   );
 
   // return res.json({ accessToken, email: user.email });
@@ -97,17 +97,17 @@ export const logoutHandler = async (req: Request, res: Response) => {
 
   logger.info(`logoutHandler cookies are: ${JSON.stringify(cookies)}`);
 
-  if (!cookies?.jwt) {
+  if (!cookies?.['__Host-jwt']) {
     return res.sendStatus(204);
   }
 
-  const refreshToken = cookies.jwt;
+  const refreshToken = cookies['__Host-jwt'];
   logger.info(`logout: refreshToken: ${JSON.stringify(refreshToken)}`);
 
   // is refresh token in db ?
   const foundUser = await User.findOne({ refreshToken });
   if (!foundUser) {
-    res.clearCookie('jwt');
+    res.clearCookie('__Host-jwt');
     return res.sendStatus(204); // No content
   }
 
@@ -126,7 +126,7 @@ export const logoutHandler = async (req: Request, res: Response) => {
 
   // res.header('Access-Control-Allow-Credentials', 'true') ;???
 
-  res.clearCookie('jwt');
+  res.clearCookie('__Host-jwt');
 
   return res.sendStatus(204); // No content
 };
@@ -135,12 +135,13 @@ export const refreshHandler = async (req: Request, res: Response) => {
   const { cookies } = req;
 
   logger.info(`cookie: ${JSON.stringify(cookies)}`);
-  if (!cookies?.jwt) {
+  if (!cookies?.['__Host-jwt']) {
     return res.sendStatus(401);
   }
 
-  const refreshToken = cookies.jwt;
-  res.clearCookie('jwt');
+  const refreshToken = cookies['__Host-jwt'];
+  logger.info(`refreshToken: ${refreshToken}`);
+  res.clearCookie('__Host-jwt');
 
   // try {
   const foundUser = await User.findOne<UserDocument>({ refreshToken }); // add .exec() at the end?
@@ -204,7 +205,7 @@ export const refreshHandler = async (req: Request, res: Response) => {
   // TRY PARTITIONED COOKIE
   res.setHeader(
     'Set-Cookie',
-    `__Host-jwt=${newRefreshToken}; Max-Age=31536; Path=/; Expires=Wed, 15 May 2024 00:45:09 GMT; HttpOnly; Secure; SameSite=None; Partitioned;`
+    `__Host-jwt=${newRefreshToken}; Max-Age=${config.COOKIE_OPTIONS.maxAge}; Path=/; HttpOnly; Secure; SameSite=None; Partitioned;`
   );
 
   // send back access token and any other data (could send the user details etc?)
