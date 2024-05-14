@@ -79,7 +79,12 @@ export const loginHandler = async (
   const result = await user.save();
   logger.info(JSON.stringify(result));
 
-  res.cookie('jwt', newRefreshToken, config.COOKIE_OPTIONS);
+  // res.cookie('jwt', newRefreshToken, config.COOKIE_OPTIONS);
+  // TRY PARTITIONED COOKIE
+  res.setHeader(
+    'Set-Cookie',
+    `__Host-jwt=${newRefreshToken}; Max-Age=31536; Path=/; Expires=Wed, 15 May 2024 00:45:09 GMT; HttpOnly; Secure; SameSite=None; Partitioned;`
+  );
 
   // return res.json({ accessToken, email: user.email });
   return res.json({ accessToken });
@@ -194,7 +199,13 @@ export const refreshHandler = async (req: Request, res: Response) => {
   logger.info(JSON.stringify(result));
 
   // create new refreshToken cookie
-  res.cookie('jwt', newRefreshToken, config.COOKIE_OPTIONS);
+  // res.cookie('jwt', newRefreshToken, config.COOKIE_OPTIONS);
+
+  // TRY PARTITIONED COOKIE
+  res.setHeader(
+    'Set-Cookie',
+    `__Host-jwt=${newRefreshToken}; Max-Age=31536; Path=/; Expires=Wed, 15 May 2024 00:45:09 GMT; HttpOnly; Secure; SameSite=None; Partitioned;`
+  );
 
   // send back access token and any other data (could send the user details etc?)
   return res.json({ accessToken });
