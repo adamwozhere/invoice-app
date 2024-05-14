@@ -24,6 +24,7 @@ export default function LoginForm() {
     try {
       await login(data.email, data.password);
     } catch (err) {
+      console.error(err);
       if (err instanceof AxiosError && err?.response?.status === 401) {
         toast.error('Incorrect username or password');
       } else {
