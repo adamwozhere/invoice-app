@@ -48,7 +48,7 @@ const formatRequestMessage = (req: Request) => {
   console.log(
     `${color.grey}${timestamp} ${methodColor[req.method]}${req.method}\t${
       req.path
-    }${color.reset}\n${JSON.stringify(req.body, null, 2)}`
+    }${color.reset}\n${JSON.stringify(req, null, 2)}`
   );
 };
 
