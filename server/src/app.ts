@@ -35,6 +35,7 @@ void db.connect();
 app.get('/api/status', (_, res) => {
   logger.info('service status pinged');
   res.sendStatus(200);
+  console.log('response headers:: ', JSON.stringify(res.getHeaders(), null, 2));
 });
 
 // routes
