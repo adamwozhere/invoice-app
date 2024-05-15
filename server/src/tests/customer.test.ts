@@ -7,7 +7,7 @@ import app from '../app';
 import Customer from '../models/customer.model';
 import jwt from 'jsonwebtoken';
 import { omit } from 'lodash';
-import config from '../utils/config';
+import config from '../config';
 
 const api = supertest(app);
 

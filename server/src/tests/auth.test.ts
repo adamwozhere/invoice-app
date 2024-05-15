@@ -9,7 +9,7 @@ import db from '../utils/db';
 import app from '../app';
 import User from '../models/user.model';
 import jwt from 'jsonwebtoken';
-import config from '../utils/config';
+import config from '../config';
 
 const api = supertest(app);
 

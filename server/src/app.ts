@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import config from './utils/config';
+import config from './config';
 import logger from './utils/logger';
 import db from './utils/db';
 
@@ -31,11 +31,10 @@ void db.connect();
 // static frontend - no longer used
 // app.use(express.static(config.FRONTEND_PATH));
 
-// healthcheck
+// API healthcheck
 app.get('/api/status', (_, res) => {
   logger.info('service status pinged');
   res.sendStatus(200);
-  console.log('response headers:: ', JSON.stringify(res.getHeaders(), null, 2));
 });
 
 // routes

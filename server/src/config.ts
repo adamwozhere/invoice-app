@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import { z } from 'zod';
 import { CorsOptions } from 'cors';
+import { CookieOptions } from 'express';
 dotenv.config();
 
 const dotEnvSchema = z.object({
@@ -15,13 +16,14 @@ const FRONTEND_PATH = '../frontend';
 const ACCESS_TOKEN_TTL = '10m'; // 10 mins
 const REFRESH_TOKEN_TTL = '1y'; // 1 year
 
-// refresh token cookie options
-const COOKIE_OPTIONS = {
+// TODO: refresh token cookie options - now working with updated @types/react-serve-static-core
+const COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
-  sameSite: 'none' as const,
+  sameSite: 'none' as const, // is as const needed?
   secure: true, // set to false if testing with thunderclient
   // maxAge: 30000, // 30 sec
   maxAge: 60 * 60 * 24 * 365, // 1 year
+  partitioned: true,
 };
 
 const CORS_OPTIONS: CorsOptions = {
