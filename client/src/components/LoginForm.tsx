@@ -7,11 +7,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import toast from 'react-hot-toast';
 import { AxiosError } from 'axios';
 import { Link } from 'react-router-dom';
+import ExclamationIcon from './icons/ExclamationIcon';
 
 export default function LoginForm() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -26,9 +28,12 @@ export default function LoginForm() {
     } catch (err) {
       console.error(err);
       if (err instanceof AxiosError && err?.response?.status === 401) {
-        toast.error('Incorrect username or password');
+        setError('root', {
+          type: 'api_error',
+          message: 'Incorrect username or password',
+        });
       } else {
-        toast.error('Error: try again');
+        toast.error('An error occurred, try again');
       }
     }
   };
@@ -42,6 +47,15 @@ export default function LoginForm() {
           void handleSubmit(onSubmit)(event);
         }}
       >
+        {errors.root && (
+          <div
+            role="alert"
+            className="flex gap-2 items-center bg-red-200 text-red-500 font-bold px-6 py-4 text-sm mb-4 rounded-md border border-red-300"
+          >
+            <ExclamationIcon />
+            {errors.root.message}
+          </div>
+        )}
         <FormInput {...register('email')} label="Email" error={errors.email} />
         <FormInput
           {...register('password')}

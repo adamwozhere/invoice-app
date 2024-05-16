@@ -6,6 +6,7 @@ import { FormInput } from './ui/FormInput';
 import { SignupInput, signupSchema } from '../schemas/signup.schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Button from './ui/Button';
+import ExclamationIcon from './icons/ExclamationIcon';
 
 export default function SignupForm() {
   const {
@@ -16,6 +17,7 @@ export default function SignupForm() {
   } = useForm<SignupInput>({
     resolver: zodResolver(signupSchema),
   });
+
   const navigate = useNavigate();
 
   const onSubmit = async (data: SignupInput) => {
@@ -30,12 +32,13 @@ export default function SignupForm() {
         err.message &&
         err.message.indexOf('E11000')
       ) {
-        setError('email', {
+        setError('root', {
           type: 'api_error',
-          message: 'Email address already taken',
+          message: 'Email address already registered',
         });
+      } else {
+        toast.error('An error ocurred, try again');
       }
-      toast.error('Error ocurred, try again');
     }
   };
 
@@ -48,6 +51,15 @@ export default function SignupForm() {
           void handleSubmit(onSubmit)(event);
         }}
       >
+        {errors.root && (
+          <div
+            role="alert"
+            className="flex gap-2 items-center bg-red-200 text-red-500 font-bold px-6 py-4 text-sm mb-4 rounded-md border border-red-300"
+          >
+            <ExclamationIcon />
+            {errors.root.message}
+          </div>
+        )}
         <FormInput {...register('name')} label="Name" error={errors.name} />
         <FormInput
           {...register('email')}
