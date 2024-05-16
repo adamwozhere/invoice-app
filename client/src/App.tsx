@@ -26,6 +26,7 @@ import Signup from './routes/Signup';
 import PersistLogin from './layouts/PersistLogin';
 import IntroLayout from './layouts/IntroLayout';
 import Login from './routes/Login';
+import ApiStatus from './layouts/ApiStatus';
 
 // create Query Client
 const queryClient = new QueryClient({
@@ -54,36 +55,40 @@ const queryClient = new QueryClient({
   }),
 });
 // TODO: error route
+// TODO: disable react tools
+
 // App routes
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Routes>
-          <Route element={<PersistLogin />}>
-            <Route element={<IntroLayout />}>
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-            </Route>
-            <Route element={<Layout />} errorElement={<Error />}>
-              <Route element={<RequireAuth />}>
-                <Route path="/" element={<Index />} />
-                <Route path="/invoices" element={<Invoices />} />
-                <Route path="/invoices/new" element={<NewInvoice />} />
-                <Route path="/invoices/:invoiceId" element={<Invoice />} />
-                <Route
-                  path="/invoices/:invoiceId/edit"
-                  element={<EditInvoice />}
-                />
-                <Route path="/customers" element={<Customers />} />
-                <Route path="/customers/new" element={<NewCustomer />} />
-                <Route path="/customers/:customerId" element={<Customer />} />
-                <Route
-                  path="/customers/:customerId/edit"
-                  element={<EditCustomer />}
-                />
+          <Route element={<ApiStatus />}>
+            <Route element={<PersistLogin />}>
+              <Route element={<IntroLayout />}>
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
               </Route>
-              <Route path="*" element={<NotFound />} />
+              <Route element={<Layout />} errorElement={<Error />}>
+                <Route element={<RequireAuth />}>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/invoices" element={<Invoices />} />
+                  <Route path="/invoices/new" element={<NewInvoice />} />
+                  <Route path="/invoices/:invoiceId" element={<Invoice />} />
+                  <Route
+                    path="/invoices/:invoiceId/edit"
+                    element={<EditInvoice />}
+                  />
+                  <Route path="/customers" element={<Customers />} />
+                  <Route path="/customers/new" element={<NewCustomer />} />
+                  <Route path="/customers/:customerId" element={<Customer />} />
+                  <Route
+                    path="/customers/:customerId/edit"
+                    element={<EditCustomer />}
+                  />
+                </Route>
+                <Route path="*" element={<NotFound />} />
+              </Route>
             </Route>
           </Route>
         </Routes>

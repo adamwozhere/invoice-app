@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from './axios';
 import type { Customer } from '../types/Customer';
 import type { QueryFunctionContext } from '@tanstack/react-query';
 // import { CustomerInput } from '../schemas/customer.schema';

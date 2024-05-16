@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from './axios';
 import { Auth } from '../types/Auth';
 
 export async function loginUser(email: string, password: string) {

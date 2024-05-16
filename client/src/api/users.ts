@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from './axios';
 import { SignupInput } from '../schemas/signup.schema';
 import { User } from '../types/User';
 

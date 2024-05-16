@@ -1,4 +1,5 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import axios from '../api/axios';
 import { createContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loginUser, logoutUser, refreshAccessToken } from '../api/auth';
@@ -11,8 +12,6 @@ interface AuthContextType {
   logout: () => void;
   setUser: React.Dispatch<React.SetStateAction<Auth | null>>;
 }
-
-// TODO: use jwt decode to get name, email, id, etc. from token, then put into the User state
 
 axios.defaults.withCredentials = true;
 axios.defaults.headers['content-type'] = 'application/json';

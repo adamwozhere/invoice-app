@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from './axios';
 import type { QueryFunctionContext } from '@tanstack/react-query';
 import type { Invoice, InvoiceFormValues } from '../types/Invoice';
 
