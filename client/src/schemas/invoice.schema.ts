@@ -1,6 +1,4 @@
 import { z } from 'zod';
-import { customerSchema } from './customer.schema';
-import { Customer } from '../types/Customer';
 // import { addressSchema } from './address.schema';
 
 export const itemSchema = z.object({
@@ -55,7 +53,6 @@ export const invoiceSchema = z.object({
     .refine((value) => value !== 'new' && value !== 'null', {
       message: 'Enter Customer',
     }),
-  newCustomer: customerSchema.optional(),
   items: z
     .array(itemSchema)
     .min(1, 'Enter an item')
@@ -71,7 +68,6 @@ export type InvoiceInput = {
   paymentTerms: number;
   status: 'draft' | 'pending' | 'paid';
   customer: string;
-  newCustomer?: Customer;
   items: {
     quantity: number;
     description: string;

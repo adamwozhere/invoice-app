@@ -15,7 +15,7 @@ export const signupSchema = z
       .max(32, 'Must not be more than 32 characters')
       .regex(
         /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.* ).{8,32}$/,
-        'Password must contain at least one number, one uppercase letter, one lowercase letter, and no spaces'
+        'Password must contain at least 8 characters, one number, one uppercase letter, one lowercase letter, and no spaces'
       ),
     passwordConfirmation: z.string({ required_error: 'Confirm password' }),
     address: addressSchema,
