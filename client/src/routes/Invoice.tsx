@@ -5,13 +5,13 @@ import { useDeleteInvoice } from '../hooks/useDeleteInvoice';
 import toast from 'react-hot-toast';
 import { useEditInvoice } from '../hooks/useEditInvoice';
 import { useState } from 'react';
-import Modal from '../components/ui/Modal';
+import Modal from '../components/ui/DeleteModal';
 // import BackButton from '../components/ui/BackButton';
 import BackIcon from '../components/icons/BackIcon';
 import formatCurrency from '../utils/formatCurrency';
 import StatusPill from '../components/ui/StatusPill';
 
-// TODO: change Invoice type to have full User details
+// TODO: table column widths
 
 export default function Invoice() {
   const { invoiceId } = useParams() as { invoiceId: string };
@@ -58,7 +58,7 @@ export default function Invoice() {
     );
   };
 
-  if (error) {
+  if (error || data === undefined) {
     return <p>Something went wrong...</p>;
   }
 
@@ -66,7 +66,6 @@ export default function Invoice() {
     <div className="max-w-5xl w-full">
       <div className="sticky top-0 bg-gray-200">
         <div className="bg-white rounded-b-xl px-6 py-2 pt-7 mb-6">
-          {/* <BackButton to="/invoices" label="Back" icon={<BackIcon />} /> */}
           <Button
             as="link"
             to="/invoices"
@@ -80,7 +79,7 @@ export default function Invoice() {
           ) : (
             <div className="flex items-center gap-4 my-4 mt-8">
               <div className="mr-auto">
-                <StatusPill status={data!.status} />
+                <StatusPill status={data.status} />
               </div>
 
               {data?.status === 'pending' ? (
@@ -94,7 +93,6 @@ export default function Invoice() {
                 disabled={isPending}
               />
               <Modal
-                title="Confirm delete"
                 open={modalOpen}
                 onClose={() => setModalOpen(false)}
                 onConfirm={handleDelete}
@@ -119,7 +117,7 @@ export default function Invoice() {
         <article className="w-full bg-white px-8 py-10 rounded-xl mt-4">
           <h1 className="font-bold text-black text-4xl">Invoice</h1>
           <h2 className="font-extrabold text-slate-500 text-2xl">
-            # {data?.invoiceNumber.toString().padStart(5, '0')}
+            # {data.invoiceNumber.toString().padStart(5, '0')}
           </h2>
           <div className="flex justify-end">
             <div className="text-end">
@@ -128,15 +126,16 @@ export default function Invoice() {
                 <br />
                 {data?.user?.email}
                 <br />
-                {data?.user?.address?.line1}
-                <br />
-                {data?.user?.address?.line2}
-                <br />
-                {data?.user?.address?.city}
-                <br />
-                {data?.user?.address?.county}
-                <br />
-                {data?.user?.address?.postcode}
+                {Object.values(data.user.address).map((line) => {
+                  return (
+                    line && (
+                      <>
+                        {line}
+                        <br />
+                      </>
+                    )
+                  );
+                })}
               </address>
             </div>
           </div>
@@ -145,38 +144,38 @@ export default function Invoice() {
               <h3>
                 <div className="font-bold">Date:</div>
                 <div className="text-zinc-500">
-                  {dateFormat.format(Date.parse(data?.date ?? ''))}
+                  {dateFormat.format(Date.parse(data.date ?? ''))}
                 </div>
               </h3>
               <h3 className="mt-4">
                 <div className="font-bold">Due:</div>
                 <div className="text-zinc-500">
-                  {dateFormat.format(Date.parse(data?.due ?? ''))}
+                  {dateFormat.format(Date.parse(data.due ?? ''))}
                 </div>
               </h3>
             </div>
             <div>
               <h3 className="font-bold">Billed to:</h3>
               <address className="not-italic mt-2 text-slate-500">
-                {data?.customer?.name}
+                {data.customer.name}
                 <br />
-                {data?.customer?.email}
+                {data.customer.email}
                 <br />
-                {data?.customer?.address?.line1}
-                <br />
-                {data?.customer?.address?.line2}
-                <br />
-                {data?.customer?.address?.city}
-                <br />
-                {data?.customer?.address?.county}
-                <br />
-                {data?.customer?.address?.postcode}
-                <br />
+                {Object.values(data.customer.address).map((line) => {
+                  return (
+                    line && (
+                      <>
+                        {line}
+                        <br />
+                      </>
+                    )
+                  );
+                })}
               </address>
             </div>
           </div>
 
-          <table className="table-fixed w-full bg-slate-200 rounded-md p-8 mt-16 mb-4">
+          <table className="table-auto w-full bg-slate-200 rounded-md p-8 mt-16 mb-4">
             <caption className="sr-only">Item details</caption>
             <thead className="uppercase text-xs font-extrabold text-slate-500">
               <tr>

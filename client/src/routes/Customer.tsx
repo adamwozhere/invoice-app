@@ -5,7 +5,7 @@ import type { Customer } from '../types/Customer';
 import { useDeleteCustomer } from '../hooks/useDeleteCustomer';
 import toast from 'react-hot-toast';
 import { useState } from 'react';
-import Modal from '../components/ui/Modal';
+import Modal from '../components/ui/DeleteModal';
 // import BackButton from '../components/ui/BackButton';
 import BackIcon from '../components/icons/BackIcon';
 import Button from '../components/ui/Button';
@@ -61,7 +61,6 @@ export default function Customer() {
                 disabled={isPending}
               />
               <Modal
-                title="Confirm delete"
                 open={modalOpen}
                 onClose={() => setModalOpen(false)}
                 onConfirm={handleDelete}
