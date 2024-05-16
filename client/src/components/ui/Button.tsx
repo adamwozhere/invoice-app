@@ -15,12 +15,14 @@ type ButtonOrLinkProps = {
   | (LinkProps & { as: 'link' })
 );
 
+// TODO: fix ghost margin / padding
+
 const variants = {
-  primary: 'text-sm text-white bg-emerald-600 hover:bg-emerald-600/70',
-  secondary: 'text-sm text-white bg-gray-500 hover:bg-gray-500/70',
+  primary: 'text-sm text-white bg-emerald-600 hover:bg-emerald-600/70 px-4',
+  secondary: 'text-sm text-white bg-gray-500 hover:bg-gray-500/70 px-4',
   tertiary:
-    'text-sm border-2 border-gray-600 bg-transparent text-gray-600 hover:text-zinc-400 hover:border-gray-400',
-  danger: 'text-sm text-white bg-red-500 hover:bg-red-500/70',
+    'text-sm border-2 border-gray-600 bg-transparent text-gray-600 hover:text-zinc-400 hover:border-gray-400 px-4',
+  danger: 'text-sm text-white bg-red-500 hover:bg-red-500/70 px-4',
   ghost: 'text-md bg-transparent text-gray-500 hover:text-black px-0',
 };
 
@@ -36,7 +38,7 @@ export default function Button({
       <Link
         {...props}
         className={clsx(
-          'inline-flex items-center justify-center gap-2 h-10 px-4 py-2 whitespace-nowrap rounded-lg font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible ring-gray-400',
+          'inline-flex items-center justify-center gap-2 h-10 py-2 whitespace-nowrap rounded-lg font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible ring-gray-400',
           variants[variant]
         )}
       >
