@@ -14,7 +14,7 @@ export const loginHandler = async (
   const { email, password } = req.body;
   const { cookies } = req;
 
-  const refreshCookie = cookies?.['__Host-jwt'];
+  const refreshCookie = cookies?.[config.COOKIE_KEY];
 
   const user = await User.findOne<UserDocument>({ email });
 
@@ -67,7 +67,7 @@ export const loginHandler = async (
     }
 
     // clear cookie
-    res.clearCookie('__Host-jwt', config.COOKIE_OPTIONS);
+    res.clearCookie(config.COOKIE_KEY, config.COOKIE_OPTIONS);
   }
 
   user.refreshToken = [...newRefreshTokenArray, newRefreshToken];
@@ -76,7 +76,7 @@ export const loginHandler = async (
   const result = await user.save();
   logger.info(JSON.stringify(result));
 
-  res.cookie('__Host-jwt', newRefreshToken, config.COOKIE_OPTIONS);
+  res.cookie(config.COOKIE_KEY, newRefreshToken, config.COOKIE_OPTIONS);
 
   return res.json({ accessToken });
 };
@@ -85,7 +85,7 @@ export const logoutHandler = async (req: Request, res: Response) => {
   // NOTE: Also need to delete bearer token on client
 
   const { cookies } = req;
-  const refreshCookie = cookies?.['__Host-jwt'];
+  const refreshCookie = cookies?.[config.COOKIE_KEY];
 
   logger.info(`logoutHandler cookies are: ${JSON.stringify(cookies)}`);
 
@@ -99,7 +99,7 @@ export const logoutHandler = async (req: Request, res: Response) => {
   // is refresh token in db ?
   const foundUser = await User.findOne({ refreshToken });
   if (!foundUser) {
-    res.clearCookie('__Host-jwt', config.COOKIE_OPTIONS);
+    res.clearCookie(config.COOKIE_KEY, config.COOKIE_OPTIONS);
     return res.sendStatus(204); // No content
   }
 
@@ -114,14 +114,14 @@ export const logoutHandler = async (req: Request, res: Response) => {
   // Could add check for production/dev - set cookie options secure: true if in production mode
   // https://www.youtube.com/watch?v=favjC6EKFgw&list=PL0Zuz27SZ-6PFkIxaJ6Xx_X46avTM1aYw&index=16&ab_channel=DaveGray
 
-  res.clearCookie('__Host-jwt', config.COOKIE_OPTIONS);
+  res.clearCookie(config.COOKIE_KEY, config.COOKIE_OPTIONS);
 
   return res.sendStatus(204); // No content
 };
 
 export const refreshHandler = async (req: Request, res: Response) => {
   const { cookies } = req;
-  const refreshCookie = cookies?.['__Host-jwt'];
+  const refreshCookie = cookies?.[config.COOKIE_KEY];
 
   logger.info(`cookie: ${JSON.stringify(cookies)}`);
   if (!refreshCookie) {
@@ -130,7 +130,7 @@ export const refreshHandler = async (req: Request, res: Response) => {
 
   const refreshToken = refreshCookie;
   logger.info(`refreshToken: ${refreshToken}`);
-  res.clearCookie('__Host-jwt', config.COOKIE_OPTIONS);
+  res.clearCookie(config.COOKIE_KEY, config.COOKIE_OPTIONS);
 
   const foundUser = await User.findOne<UserDocument>({ refreshToken }); // add .exec() at the end?
 
@@ -188,7 +188,7 @@ export const refreshHandler = async (req: Request, res: Response) => {
   logger.info(JSON.stringify(result));
 
   // create new refreshToken cookie
-  res.cookie('__Host-jwt', newRefreshToken, config.COOKIE_OPTIONS);
+  res.cookie(config.COOKIE_KEY, newRefreshToken, config.COOKIE_OPTIONS);
 
   // send back new access token (along with new refresh cookie)
   return res.json({ accessToken });

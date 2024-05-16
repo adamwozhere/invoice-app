@@ -16,15 +16,23 @@ const FRONTEND_PATH = '../frontend';
 const ACCESS_TOKEN_TTL = '10m'; // 10 mins
 const REFRESH_TOKEN_TTL = '1y'; // 1 year
 
-// TODO: refresh token cookie options - now working with updated @types/react-serve-static-core
+/**
+ * To allow 3rd party cookies with new CHIPS specification,
+ * a cookie must be partitioned and have __Host- prefix.
+ * In local server dev environment this does not work,
+ * so enable based on NODE_ENV === 'production'
+ */
 const COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
   sameSite: 'none' as const, // is as const needed?
   secure: true, // set to false if testing with thunderclient
   // maxAge: 30000, // 30 sec
   maxAge: 60 * 60 * 24 * 365, // 1 year
-  partitioned: true,
+  partitioned: process.env.NODE_ENV === 'production',
 };
+
+// if partitioned, cookie should have '__Host-' prefix
+const COOKIE_KEY = COOKIE_OPTIONS.partitioned ? '__Host-jwt' : 'jwt';
 
 const CORS_OPTIONS: CorsOptions = {
   origin: [
@@ -41,6 +49,7 @@ const config = {
   ACCESS_TOKEN_TTL,
   REFRESH_TOKEN_TTL,
   COOKIE_OPTIONS,
+  COOKIE_KEY,
   CORS_OPTIONS,
 } as const;
 
