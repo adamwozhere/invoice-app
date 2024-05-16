@@ -4,6 +4,8 @@ import { Outlet } from 'react-router-dom';
 import { refreshAccessToken } from '../api/auth';
 
 import { jwtDecode } from 'jwt-decode';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
+import Intro from '../components/Intro';
 
 export default function PersistLogin() {
   const { setUser } = useAuth();
@@ -35,6 +37,17 @@ export default function PersistLogin() {
     return () => setUser(null);
   }, [setUser]);
 
-  return isLoading ? <p>Loading...</p> : <Outlet />;
+  return isLoading ? (
+    <div className="min-h-screen w-full flex">
+      <Intro />
+      <main className="flex items-center bg-gray-200 w-2/3 pl-[10%]">
+        <div className="flex gap-6">
+          <LoadingSpinner />
+        </div>
+      </main>
+    </div>
+  ) : (
+    <Outlet />
+  );
 }
 

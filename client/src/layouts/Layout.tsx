@@ -23,16 +23,6 @@ export default function Layout() {
           </div>
           <nav className="h-full py-8 pt-16">
             <menu className="flex flex-col flex-1 gap-1 h-full">
-              {/* {user ? (
-                <>
-                  <span>Hello {user.email} !</span>
-                  <button onClick={logout}>logout</button>
-                </>
-              ) : (
-                <li>
-                  <Link to="/login">Login</Link>
-                </li>
-              )} */}
               <li>
                 <MenuButton to="/" label="Home" icon={<HomeIcon />} />
               </li>
