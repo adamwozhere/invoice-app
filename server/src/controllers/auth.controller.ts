@@ -67,7 +67,7 @@ export const loginHandler = async (
     }
 
     // clear cookie
-    res.clearCookie('__Host-jwt');
+    res.clearCookie('__Host-jwt', config.COOKIE_OPTIONS);
   }
 
   user.refreshToken = [...newRefreshTokenArray, newRefreshToken];
@@ -99,7 +99,7 @@ export const logoutHandler = async (req: Request, res: Response) => {
   // is refresh token in db ?
   const foundUser = await User.findOne({ refreshToken });
   if (!foundUser) {
-    res.clearCookie('__Host-jwt');
+    res.clearCookie('__Host-jwt', config.COOKIE_OPTIONS);
     return res.sendStatus(204); // No content
   }
 
@@ -114,7 +114,7 @@ export const logoutHandler = async (req: Request, res: Response) => {
   // Could add check for production/dev - set cookie options secure: true if in production mode
   // https://www.youtube.com/watch?v=favjC6EKFgw&list=PL0Zuz27SZ-6PFkIxaJ6Xx_X46avTM1aYw&index=16&ab_channel=DaveGray
 
-  res.clearCookie('__Host-jwt');
+  res.clearCookie('__Host-jwt', config.COOKIE_OPTIONS);
 
   return res.sendStatus(204); // No content
 };
@@ -130,7 +130,7 @@ export const refreshHandler = async (req: Request, res: Response) => {
 
   const refreshToken = refreshCookie;
   logger.info(`refreshToken: ${refreshToken}`);
-  res.clearCookie('__Host-jwt');
+  res.clearCookie('__Host-jwt', config.COOKIE_OPTIONS);
 
   const foundUser = await User.findOne<UserDocument>({ refreshToken }); // add .exec() at the end?
 
