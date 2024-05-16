@@ -58,8 +58,8 @@ export default function Invoice() {
     );
   };
 
-  if (error || data === undefined) {
-    return <p>Something went wrong...</p>;
+  if (error) {
+    return <h2 className="text-bold mt-8">Error, try again.</h2>;
   }
 
   return (
@@ -74,7 +74,7 @@ export default function Invoice() {
             variant="ghost"
           />
 
-          {isLoading ? (
+          {isLoading || data === undefined ? (
             <div className="h-20 mt-2"></div>
           ) : (
             <div className="flex items-center gap-4 my-4 mt-8">
@@ -104,7 +104,7 @@ export default function Invoice() {
         </div>
       </div>
 
-      {isLoading ? (
+      {isLoading || data === undefined ? (
         <article className="w-full bg-white px-8 py-10 rounded-xl mt-4 animate-pulse">
           <div className="bg-gray-200 h-10 w-32 my-2"></div>
           <div className="bg-gray-200 h-6 w-28 my-2"></div>

@@ -6,7 +6,6 @@ import { useDeleteCustomer } from '../hooks/useDeleteCustomer';
 import toast from 'react-hot-toast';
 import { useState } from 'react';
 import Modal from '../components/ui/DeleteModal';
-// import BackButton from '../components/ui/BackButton';
 import BackIcon from '../components/icons/BackIcon';
 import Button from '../components/ui/Button';
 
@@ -34,14 +33,13 @@ export default function Customer() {
   };
 
   if (error) {
-    return <p>Something went wrong...</p>;
+    return <h2 className="text-bold mt-8">Error, try again</h2>;
   }
 
   return (
     <div className="max-w-5xl w-full">
       <div className="sticky top-0 bg-gray-200">
         <div className="bg-white rounded-b-xl px-6 py-2 pt-7 mb-6">
-          {/* <BackButton to="/customers" label="Back" icon={<BackIcon />} /> */}
           <Button
             as="link"
             to="/customers"
@@ -49,7 +47,7 @@ export default function Customer() {
             iconLeft={<BackIcon />}
             variant="ghost"
           />
-          {isLoading ? (
+          {isLoading || data === undefined ? (
             <div className="h-20 mt-2"></div>
           ) : (
             <div className="flex items-center justify-end gap-4 my-4 mt-8">
@@ -71,7 +69,7 @@ export default function Customer() {
           )}
         </div>
       </div>
-      {isLoading ? (
+      {isLoading || data === undefined ? (
         <article className="w-full bg-white px-8 py-10 rounded-xl mt-4 animate-pulse">
           <div className="bg-gray-200 h-6 w-40 my-2"></div>
           <div className="bg-gray-200 h-6 w-40 my-2"></div>
