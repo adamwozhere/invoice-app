@@ -32,11 +32,6 @@ export default function Index() {
               &nbsp;pending invoice{pendingInvoices?.length === 1 ? '' : 's'}.
             </h2>
           )}
-          {/* <BackButton
-            to="/invoices"
-            label="View invoices"
-            icon={<BackIcon />}
-          /> */}
           <Button
             as="link"
             to="/invoices"
