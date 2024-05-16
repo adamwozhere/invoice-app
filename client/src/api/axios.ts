@@ -2,7 +2,7 @@ import axios from 'axios';
 import { API_BASE_URL } from './config';
 
 // set to true if using local dev API server
-const USE_LOCAL_API = true;
+const USE_LOCAL_API = false;
 
 const axiosAuth = axios.create({
   baseURL: USE_LOCAL_API ? '' : API_BASE_URL,
