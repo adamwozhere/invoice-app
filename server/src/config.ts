@@ -27,7 +27,11 @@ const COOKIE_OPTIONS: CookieOptions = {
 };
 
 const CORS_OPTIONS: CorsOptions = {
-  origin: ['https://mint-invoicing.onrender.com', 'http://localhost:4173'],
+  origin: [
+    'https://mint-invoicing.onrender.com',
+    'http://localhost:4173', // Vite preview
+    'http://localhost:5173', // Vite dev
+  ],
   credentials: true,
 };
 
