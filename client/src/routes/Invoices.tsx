@@ -5,10 +5,8 @@ import StatusPill from '../components/ui/StatusPill';
 import formatCurrency from '../utils/formatCurrency';
 import formatInvoiceNumber from '../utils/formatInvoiceNumber';
 import SortIcon from '../components/icons/SortIcon';
-import Invoice from './Invoice';
 import PlusIcon from '../components/icons/PlusIcon';
 import Button from '../components/ui/Button';
-// import Button from '../components/ui/Button';
 
 export default function Invoices() {
   const { data, error, isLoading } = useInvoices();
@@ -24,27 +22,41 @@ export default function Invoices() {
   const order = params.get('order');
 
   if (error) {
-    return <p>Something went wrong...</p>;
+    return <h2 className="text-bold mt-8">Something went wrong...</h2>;
   }
 
   const invoices =
     filter === 'all' ? data : data?.filter((inv) => inv.status === filter);
 
-  const sortKeys: Record<string, string> = {
-    invoice: 'invoiceNumber',
-    date: 'date',
-    customer: 'customer.name',
-    total: 'total',
-    status: 'status',
-  };
-
-  const sortKey = sortKeys[sort!];
-
-  invoices?.sort((a, b) =>
-    order === 'asc'
-      ? a[sortKey as keyof typeof Invoice] - b[sortKey as keyof typeof Invoice]
-      : b[sortKey as keyof typeof Invoice] - a[sortKey as keyof typeof Invoice]
-  );
+  if (sort === 'invoice') {
+    invoices?.sort((a, b) => {
+      return order === 'asc'
+        ? a.invoiceNumber - b.invoiceNumber
+        : b.invoiceNumber - a.invoiceNumber;
+    });
+  } else if (sort === 'date') {
+    invoices?.sort((a, b) => {
+      return order === 'asc'
+        ? new Date(a.date).getTime() - new Date(b.date).getTime()
+        : new Date(b.date).getTime() - new Date(a.date).getTime();
+    });
+  } else if (sort === 'customer') {
+    invoices?.sort((a, b) => {
+      return order === 'asc'
+        ? a.customer.name.localeCompare(b.customer.name)
+        : b.customer.name.localeCompare(a.customer.name);
+    });
+  } else if (sort === 'total') {
+    invoices?.sort((a, b) => {
+      return order === 'asc' ? a.total - b.total : b.total - a.total;
+    });
+  } else if (sort === 'status') {
+    invoices?.sort((a, b) => {
+      return order === 'asc'
+        ? a.status.localeCompare(b.status)
+        : b.status.localeCompare(a.status);
+    });
+  }
 
   return (
     <div className="max-w-5xl w-full">
@@ -192,7 +204,6 @@ export default function Invoices() {
       )}
 
       <div className="h-6 bg-zinc-100 rounded-b-xl mt-[2px] mb-20"></div>
-      {/* <pre>{JSON.stringify(data, null, 2)}</pre> */}
     </div>
   );
 }
