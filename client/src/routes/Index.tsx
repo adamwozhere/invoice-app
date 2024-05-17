@@ -2,6 +2,7 @@ import { useAuth } from '../hooks/useAuth';
 import useInvoices from '../hooks/useInvoices';
 import Button from '../components/ui/Button';
 import ForwardIcon from '../components/icons/ForwardIcon';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 export default function Index() {
   const { user } = useAuth();
@@ -10,7 +11,7 @@ export default function Index() {
   const pendingInvoices = data?.filter((inv) => inv.status === 'pending');
 
   if (error) {
-    return <p>Something went wrong...</p>;
+    return <h2 className="font-bold mt-8">Error, try again</h2>;
   }
 
   return (
@@ -22,7 +23,9 @@ export default function Index() {
             &nbsp;!
           </h1>
           {isLoading ? (
-            <div className="h-24 -mt-1"></div>
+            <div className="my-[30px]">
+              <LoadingSpinner />
+            </div>
           ) : (
             <h2 className="text-xl my-8">
               You have&nbsp;
