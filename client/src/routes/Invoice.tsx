@@ -117,7 +117,7 @@ export default function Invoice() {
         <article className="w-full bg-white px-8 py-10 rounded-xl mt-4">
           <h1 className="font-bold text-black text-4xl">Invoice</h1>
           <h2 className="font-extrabold text-slate-500 text-2xl">
-            # {data.invoiceNumber.toString().padStart(5, '0')}
+            # {data?.invoiceNumber.toString().padStart(5, '0')}
           </h2>
           <div className="flex justify-end">
             <div className="text-end">
@@ -126,7 +126,7 @@ export default function Invoice() {
                 <br />
                 {data?.user?.email}
                 <br />
-                {Object.values(data.user.address).map((line) => {
+                {Object.values(data?.user?.address).map((line) => {
                   return (
                     line && (
                       <>
@@ -157,20 +157,21 @@ export default function Invoice() {
             <div>
               <h3 className="font-bold">Billed to:</h3>
               <address className="not-italic mt-2 text-slate-500">
-                {data.customer.name}
+                {data?.customer?.name}
                 <br />
-                {data.customer.email}
+                {data?.customer?.email}
                 <br />
-                {Object.values(data.customer.address).map((line) => {
-                  return (
-                    line && (
-                      <>
-                        {line}
-                        <br />
-                      </>
-                    )
-                  );
-                })}
+                {data?.customer?.address &&
+                  Object.values(data?.customer?.address).map((line) => {
+                    return (
+                      line && (
+                        <>
+                          {line}
+                          <br />
+                        </>
+                      )
+                    );
+                  })}
               </address>
             </div>
           </div>
