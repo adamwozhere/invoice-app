@@ -1,5 +1,4 @@
 import { DevTool } from '@hookform/devtools';
-
 import { useCustomers } from '../hooks/useCustomers';
 
 import { FormInput } from './ui/FormInput';
@@ -25,8 +24,6 @@ import { customerSchema } from '../schemas/customer.schema';
 import { Select } from './ui/Select';
 import { useFieldArray, useForm } from 'react-hook-form';
 
-// TODO: disallow multiple submitions!
-// TODO: allow enter to submit main form
 // TODO: check form schema for name, that it matches input length of server schema
 
 // TODO: note on react-hook-form void returns for attributes:
@@ -50,7 +47,6 @@ import { useFieldArray, useForm } from 'react-hook-form';
 
 type Props = {
   type: 'NewInvoice' | 'EditInvoice';
-  // defaultValues: Partial<InvoiceInput>;
   defaultValues: InvoiceFormValues;
 };
 
@@ -65,7 +61,7 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
     useCreateCustomer();
 
   if (!defaultValues.customer) {
-    defaultValues.customer = '';
+    defaultValues.customer = 'null';
   }
 
   const customerForm = useForm<Customer>({
@@ -92,21 +88,8 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
   // TODO: fix why customer doesn't update when you create a new customer
   // const [newCustomer, setNewCustomer] = useState<string>('null');
 
-  // useEffect(() => {
-  //   methods.setValue('customer', newCustomer);
-  // }, [methods, newCustomer]);
-
   // watch customer to toggle newCustomer form inputs
   const selectedCustomer = methods.watch('customer') ?? 'null';
-  // watch status to switch draft / save as buttons depending on status
-
-  // const watchCustomer = methods.watch('customer');
-
-  // useEffect(() => {
-  //   if (watchCustomer !== '') {
-  //     methods.setValue('customer', watchCustomer);
-  //   }
-  // }, [methods, watchCustomer]);
 
   // base isDraftInvoice on the default values to conditionally render Create Invoice button,
   // otherwise when clicking, the button will disappear as the status has been set to pending!
@@ -119,7 +102,7 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
     control: methods.control,
   });
 
-  // watch items to calculate and show item totals - should show grand total too?
+  // watch items to calculate and show item totals
   const watchItems = methods.watch('items');
 
   const onCancel = (e: React.SyntheticEvent) => {
@@ -202,6 +185,7 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
     // trigger handleSubmit to pass the form data to edit function
     void methods.handleSubmit((data: InvoiceFormValues) => {
       console.log('try save changes');
+      console.log('data is:', data);
 
       // transform 'null' customer to null;
       if (data.customer === 'null') {
@@ -235,7 +219,7 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
 
     // then trigger handleSubmit to pass the form data to create function
     void methods.handleSubmit((data: InvoiceFormValues) => {
-      console.log('try save new:', data);
+      console.log('try save new, data is:', data);
 
       // transform 'null' customer to null;
       if (data.customer === 'null') {
@@ -320,11 +304,11 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
             <Select
               options={customerOptions}
               label="Customer"
+              error={errors.customer}
               {...methods.register('customer')}
             />
 
             <div className="w-full">
-              {/* <h3 className="font-bold mb-4">Items</h3> */}
               <div className="flex gap-4 text-sm font-bold">
                 <label id="labelQuantity" className="w-1/5 mb-1">
                   Quantity
@@ -543,7 +527,7 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
         )}
       </div>
 
-      <DevTool control={methods.control} />
+      {import.meta.env.DEV && <DevTool control={methods.control} />}
     </div>
   );
 }
