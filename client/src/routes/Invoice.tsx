@@ -126,13 +126,13 @@ export default function Invoice() {
                 <br />
                 {data?.user?.email}
                 <br />
-                {Object.values(data?.user?.address).map((line) => {
+                {Object.entries(data?.user?.address).map((line) => {
                   return (
-                    line && (
-                      <>
-                        {line}
+                    line[1] && (
+                      <span key={line[0]}>
+                        {line[1]}
                         <br />
-                      </>
+                      </span>
                     )
                   );
                 })}
@@ -162,13 +162,13 @@ export default function Invoice() {
                 {data?.customer?.email}
                 <br />
                 {data?.customer?.address &&
-                  Object.values(data?.customer?.address).map((line) => {
+                  Object.entries(data?.customer?.address).map((line) => {
                     return (
-                      line && (
-                        <>
-                          {line}
+                      line[1] && (
+                        <span key={line[0]}>
+                          {line[1]}
                           <br />
-                        </>
+                        </span>
                       )
                     );
                   })}
