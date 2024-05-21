@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { AxiosError } from 'axios';
 import { Link } from 'react-router-dom';
 import ExclamationIcon from './icons/ExclamationIcon';
+import { useState } from 'react';
 
 export default function LoginForm() {
   const {
@@ -19,13 +20,16 @@ export default function LoginForm() {
     resolver: zodResolver(loginSchema),
   });
   const { login } = useAuth();
+  const [loading, setLoading] = useState(false);
 
   const onSubmit = async (data: LoginInput) => {
     console.log('login', data);
 
     try {
+      setLoading(true);
       await login(data.email, data.password);
     } catch (err) {
+      setLoading(false);
       console.error(err);
       if (err instanceof AxiosError && err?.response?.status === 401) {
         setError('root', {
@@ -35,6 +39,8 @@ export default function LoginForm() {
       } else {
         toast.error('An error occurred, try again');
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -63,7 +69,12 @@ export default function LoginForm() {
           type="password"
           error={errors.password}
         />
-        <Button label="Log in" type="submit" />
+        <Button
+          label="Log in"
+          type="submit"
+          loading={loading}
+          disabled={loading}
+        />
       </form>
       <h2 className="mt-8 text-lg text-gray-500">
         Don&apos;t have an account?&nbsp;
