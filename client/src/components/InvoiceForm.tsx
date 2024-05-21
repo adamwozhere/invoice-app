@@ -23,6 +23,7 @@ import { customerSchema } from '../schemas/customer.schema';
 
 import { Select } from './ui/Select';
 import { useFieldArray, useForm } from 'react-hook-form';
+import React, { useState } from 'react';
 
 // TODO: check form schema for name, that it matches input length of server schema
 
@@ -53,9 +54,9 @@ type Props = {
 export default function InvoiceForm({ type, defaultValues }: Props) {
   const navigate = useNavigate();
   const { data: customers } = useCustomers();
-  const { mutate: createInvoice, isPending: isPendingCreateInvoice } =
+  const { mutate: createInvoiceMutation, isPending: isPendingCreateInvoice } =
     useCreateInvoice();
-  const { mutate: editInvoice, isPending: isPendingEditInvoice } =
+  const { mutate: editInvoiceMutation, isPending: isPendingEditInvoice } =
     useEditInvoice();
   const { mutate: createCustomer, isPending: isPendingCreateCustomer } =
     useCreateCustomer();
@@ -63,6 +64,8 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
   if (!defaultValues.customer) {
     defaultValues.customer = 'null';
   }
+
+  // TODO: fix loading state of buttons, and reorder them for Enter submition
 
   const customerForm = useForm<Customer>({
     resolver: zodResolver(customerSchema),
@@ -79,14 +82,16 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
 
   const { errors } = methods.formState;
 
+  // capture loading state for ui button feedback --
+  // cannot use mutation isPending, as both Draft and NewInvoice use the Create mutation
+  const [buttonLoading, setButtonLoading] = useState<string>('');
+
+  // populate Customer Select options
   const customerOptions: [string, string][] | undefined = customers?.map(
     (cust) => [cust.id, cust.name]
   );
   customerOptions?.unshift(['null', '-select customer-']);
   customerOptions?.push(['new', '-new customer-']);
-
-  // TODO: fix why customer doesn't update when you create a new customer
-  // const [newCustomer, setNewCustomer] = useState<string>('null');
 
   // watch customer to toggle newCustomer form inputs
   const selectedCustomer = methods.watch('customer') ?? 'null';
@@ -103,7 +108,7 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
   });
 
   // watch items to calculate and show item totals
-  const watchItems = methods.watch('items');
+  const invoiceItems = methods.watch('items');
 
   const onCancel = (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -115,129 +120,6 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
     e.preventDefault();
     methods.setValue('customer', 'null');
     customerForm.reset();
-  };
-
-  const onSubmit = (data: InvoiceFormValues) => {
-    console.log('onSubmit', data);
-    // TODO: save as draft ? - need to set status before this so that it goes through zodResolver
-    // will need to be a hidden form element?
-    // TODO: how to deal with saving as paid / mark as paid etc - maybe button in edit form page
-    // setValue('status', 'pending');
-
-    // transform 'null' customer to null;
-    if (data.customer === 'null') {
-      data.customer = null;
-    }
-
-    if (type === 'NewInvoice') {
-      // set to pending (note that this is changed AFTER the data is sent to this function!)
-      methods.setValue('status', 'pending');
-      // So need to set it directly to data (especially in case of Edit Invoice -> create invoice from a draft)
-      data.status = 'pending';
-
-      console.log('data is', data);
-
-      createInvoice(data, {
-        onSuccess: () => {
-          methods.reset();
-          toast.success('Invoice created!');
-          navigate('/invoices');
-        },
-        onError: (error) => {
-          toast.error('Could not create invoice - try again');
-          console.log(error);
-        },
-      });
-    } else if (type === 'EditInvoice') {
-      console.log('edit invoice');
-      if (isDraftInvoice) {
-        console.log('setting to pending');
-
-        // triggers changing the validation schema but not the actual data as it is already present in function
-        methods.setValue('status', 'pending');
-        // therefore change it inside function directly also
-        data.status = 'pending';
-      }
-      console.log('data is', data);
-      editInvoice(
-        { invoiceId: data.id!, data: data },
-        {
-          onSuccess: () => {
-            methods.reset();
-            toast.success(
-              isDraftInvoice ? 'Invoice created!' : 'Changes saved'
-            );
-            navigate('/invoices');
-          },
-          onError: (error) => {
-            toast.error('Could not create invoice - try again');
-            console.log(error);
-          },
-        }
-      );
-    }
-  };
-
-  const onSaveChanges = (event: React.SyntheticEvent) => {
-    event.preventDefault();
-    console.log('save changes');
-
-    // trigger handleSubmit to pass the form data to edit function
-    void methods.handleSubmit((data: InvoiceFormValues) => {
-      console.log('try save changes');
-      console.log('data is:', data);
-
-      // transform 'null' customer to null;
-      if (data.customer === 'null') {
-        data.customer = null;
-      }
-
-      editInvoice(
-        { invoiceId: data.id!, data },
-        {
-          onSuccess: () => {
-            methods.reset();
-            toast.success('Changes saved');
-            navigate('/invoices'); // should it navigate to actual invoice?
-          },
-          onError: (error) => {
-            toast.error('Could not save changes - try again');
-            console.log(error);
-          },
-        }
-      );
-    })(event);
-  };
-
-  const onSaveDraft = (event: React.SyntheticEvent) => {
-    event.preventDefault();
-    // set invoiceStatus as draft
-    methods.setValue('status', 'draft');
-    console.log('saving draft');
-
-    console.log('new');
-
-    // then trigger handleSubmit to pass the form data to create function
-    void methods.handleSubmit((data: InvoiceFormValues) => {
-      console.log('try save new, data is:', data);
-
-      // transform 'null' customer to null;
-      if (data.customer === 'null') {
-        data.customer = null;
-      }
-
-      createInvoice(data, {
-        onSuccess: () => {
-          methods.reset();
-          toast.success('Draft invoice created');
-          navigate('/invoices');
-        },
-        onError: (error) => {
-          toast.error('Could not create draft - try again');
-          console.log(error);
-        },
-      });
-    })(event);
   };
 
   const onDeleteItem = (e: React.SyntheticEvent, index: number) => {
@@ -270,18 +152,90 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
     });
   };
 
+  const createInvoice = (data: InvoiceFormValues) => {
+    if (data.customer === 'null') {
+      data.customer = null;
+    }
+
+    console.log('newInvoice - data is:', data);
+
+    createInvoiceMutation(data, {
+      onSuccess: () => {
+        methods.reset();
+        toast.success('Invoice created!');
+        navigate('/invoices');
+      },
+      onError: (error) => {
+        toast.error('Error, try again');
+        console.error(error);
+      },
+    });
+  };
+
+  const saveInvoice = (data: InvoiceFormValues) => {
+    if (data.customer === 'null') {
+      data.customer = null;
+    }
+
+    console.log('saveInvoice - data is:', data);
+
+    editInvoiceMutation(
+      { invoiceId: data.id!, data: data },
+      {
+        onSuccess: () => {
+          methods.reset();
+          toast.success('Invoice updated');
+          navigate('/invoices');
+        },
+        onError: (error) => {
+          toast.error('Error, try again');
+          console.log(error);
+        },
+      }
+    );
+  };
+
+  const onSubmit = (
+    event: React.SyntheticEvent<HTMLFormElement, SubmitEvent>
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    // event type - value attribute on the button element used to submit the form
+    const eventType = event.nativeEvent.submitter?.getAttribute('value');
+    console.log('handlePresubmit:', eventType);
+
+    if (eventType === 'newInvoice') {
+      methods.setValue('status', 'pending');
+      setButtonLoading('newInvoice');
+      void methods.handleSubmit(createInvoice)(event);
+    } else if (eventType === 'draftInvoice') {
+      methods.setValue('status', 'draft');
+      setButtonLoading('draftInvoice');
+      void methods.handleSubmit(createInvoice)(event);
+    } else if (eventType === 'editInvoice') {
+      methods.setValue('status', defaultValues.status);
+      setButtonLoading('editInvoice');
+      void methods.handleSubmit(saveInvoice)(event);
+    } else if (eventType === 'draftToNewInvoice') {
+      methods.setValue('status', 'pending');
+      setButtonLoading('draftToNewInvoice');
+      void methods.handleSubmit(saveInvoice)(event);
+    } else {
+      console.error('unandled form event');
+    }
+  };
+
   return (
     <div className="w-full">
       <div className="bg-white px-6 py-8 rounded-xl">
+        {/* Main form */}
         {selectedCustomer !== 'new' && (
           <form
             id="invoice-form"
             className="flex flex-col w-full"
             noValidate
-            onSubmit={(event) => {
-              event.preventDefault();
-              void methods.handleSubmit(onSubmit)(event);
-            }}
+            onSubmit={onSubmit}
           >
             <div className="flex w-full gap-8">
               <FormInput
@@ -308,6 +262,7 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
               {...methods.register('customer')}
             />
 
+            {/* Item field array */}
             <div className="w-full">
               <div className="flex gap-4 text-sm font-bold">
                 <label id="labelQuantity" className="w-1/5 mb-1">
@@ -361,8 +316,8 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
                       <div className="w-1/5">
                         <div className="flex w-full border-2 h-10 px-4 py-2 rounded-md text-sm">
                           {(
-                            watchItems![index].amount! *
-                            watchItems![index].quantity!
+                            invoiceItems![index].amount! *
+                            invoiceItems![index].quantity!
                           ).toFixed(2)}
                         </div>
                       </div>
@@ -397,7 +352,7 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
                   </label>
                   <div className="w-1/5 font-bold flex h-10 rounded-md bg-background px-3 py-2 text-sm ring-offset-background medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                     {formatCurrency(
-                      watchItems?.reduce((acc, curr) => {
+                      invoiceItems?.reduce((acc, curr) => {
                         return acc + curr.amount! * curr.quantity!;
                       }, 0) || 0
                     )}
@@ -405,6 +360,9 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
                 </div>
               </div>
             </div>
+            {/* End Item field array */}
+
+            {/* Form submit buttons */}
             <div className="flex gap-4 mt-10">
               {type === 'NewInvoice' ? (
                 <>
@@ -416,14 +374,23 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
                     />
                   </div>
                   <Button
-                    variant="secondary"
-                    onClick={onSaveDraft}
-                    label="Save as draft"
+                    className="order-1"
+                    type="submit"
+                    label="Create invoice"
+                    value="newInvoice"
+                    loading={
+                      buttonLoading === 'newInvoice' && isPendingCreateInvoice
+                    }
                     disabled={isPendingCreateInvoice}
                   />
                   <Button
+                    variant="secondary"
                     type="submit"
-                    label="Create invoice"
+                    label="Save as draft"
+                    value="draftInvoice"
+                    loading={
+                      buttonLoading === 'draftInvoice' && isPendingCreateInvoice
+                    }
                     disabled={isPendingCreateInvoice}
                   />
                 </>
@@ -436,15 +403,25 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
                     label="Cancel"
                   />
                   <Button
-                    onClick={onSaveChanges}
-                    variant="secondary"
-                    label="Save changes"
+                    className="order-1"
+                    type="submit"
+                    label="Create invoice"
+                    value="draftToNewInvoice"
+                    loading={
+                      buttonLoading === 'draftToNewInvoice' &&
+                      isPendingEditInvoice
+                    }
                     disabled={isPendingEditInvoice}
                   />
                   <Button
                     type="submit"
-                    label="Create invoice"
-                    disabled={isPendingCreateInvoice}
+                    variant="secondary"
+                    label="Save changes"
+                    value="editInvoice"
+                    loading={
+                      buttonLoading === 'editInvoice' && isPendingEditInvoice
+                    }
+                    disabled={isPendingEditInvoice}
                   />
                 </>
               ) : null}
@@ -458,14 +435,21 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
                   <Button
                     type="submit"
                     label="Save changes"
+                    value="editInvoice"
+                    loading={
+                      buttonLoading === 'editInvoice' && isPendingEditInvoice
+                    }
                     disabled={isPendingEditInvoice}
                   />
                 </>
               ) : null}
             </div>
+            {/* End form submit buttons */}
           </form>
         )}
+        {/* End main form */}
 
+        {/* New customer form */}
         {selectedCustomer === 'new' && (
           <form
             noValidate
@@ -520,11 +504,13 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
               <Button
                 label="Add customer"
                 type="submit"
+                loading={isPendingCreateCustomer}
                 disabled={isPendingCreateCustomer}
               />
             </div>
           </form>
         )}
+        {/* End new customer form */}
       </div>
 
       {import.meta.env.DEV && <DevTool control={methods.control} />}
