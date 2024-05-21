@@ -53,6 +53,20 @@ export default function LoginForm() {
           void handleSubmit(onSubmit)(event);
         }}
       >
+        <div className="flex gap-2 items-center bg-blue-200 text-blue-500  px-6 py-4 text-sm mb-4 rounded-md border border-blue-300">
+          <div className="self-start">
+            <ExclamationIcon />
+          </div>
+          <details>
+            <summary className="cursor-pointer hover:underline font-bold">
+              Just want to try the demo?
+            </summary>
+            <br />
+            Email: <span className="font-bold">demo@mint.app</span>
+            <br />
+            Password: <span className="font-bold">Demo1234</span>
+          </details>
+        </div>
         {errors.root && (
           <div
             role="alert"
