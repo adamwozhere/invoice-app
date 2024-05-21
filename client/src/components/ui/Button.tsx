@@ -33,6 +33,7 @@ export default function Button({
   iconLeft,
   iconRight,
   loading,
+  className,
   ...props
 }: ButtonOrLinkProps) {
   if (props.as === 'link') {
@@ -41,7 +42,8 @@ export default function Button({
         {...props}
         className={clsx(
           'inline-flex items-center justify-center gap-2 h-10 py-2 whitespace-nowrap rounded-lg font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible ring-gray-400',
-          variants[variant]
+          variants[variant],
+          className
         )}
       >
         {iconLeft && (
@@ -98,7 +100,8 @@ export default function Button({
       type={props.type ?? 'button'}
       className={clsx(
         'inline-flex items-center justify-center gap-2 h-10 px-4 py-2 whitespace-nowrap rounded-lg text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible ring-gray-400',
-        variants[variant]
+        variants[variant],
+        className
       )}
     >
       {iconLeft && (
