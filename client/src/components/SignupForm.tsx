@@ -46,6 +46,7 @@ export default function SignupForm() {
     <div className="bg-gray-200 p-8 -mt-36">
       <h1 className="text-4xl font-bold text-gray-500 mb-10">Sign up</h1>
       <form
+        noValidate
         onSubmit={(event) => {
           event.preventDefault();
           void handleSubmit(onSubmit)(event);
