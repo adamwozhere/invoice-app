@@ -9,6 +9,8 @@ import { AxiosError } from 'axios';
 import { Link } from 'react-router-dom';
 import ExclamationIcon from './icons/ExclamationIcon';
 import { useState } from 'react';
+import PasswordHiddenIcon from './icons/PasswordHiddenIcon';
+import PasswordVisibleIcon from './icons/PasswordVisibleIcon';
 
 export default function LoginForm() {
   const {
@@ -21,6 +23,7 @@ export default function LoginForm() {
   });
   const { login } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const onSubmit = async (data: LoginInput) => {
     console.log('login', data);
@@ -57,15 +60,19 @@ export default function LoginForm() {
           <div className="self-start">
             <ExclamationIcon />
           </div>
-          <details>
+
+          {/* demo login details */}
+          {/* <details>
             <summary className="cursor-pointer hover:underline font-bold">
               Just want to try the demo?
             </summary>
-            <br />
-            Email: <span className="font-bold">demo@mint.app</span>
-            <br />
-            Password: <span className="font-bold">Demo1234</span>
-          </details>
+            <div className="ml-4 mt-2">
+              Email: <span className="font-bold">demo@mint.app</span>
+              <br />
+              Password: <span className="font-bold">Demo1234</span>
+            </div>
+          </details> */}
+          {/* end demo login details */}
         </div>
         {errors.root && (
           <div
@@ -77,12 +84,30 @@ export default function LoginForm() {
           </div>
         )}
         <FormInput {...register('email')} label="Email" error={errors.email} />
-        <FormInput
-          {...register('password')}
-          label="Password"
-          type="password"
-          error={errors.password}
-        />
+        <div className="relative">
+          <FormInput
+            {...register('password')}
+            label="Password"
+            type={showPassword ? 'text' : 'password'}
+            error={errors.password}
+          />
+          <div className="absolute right-4 top-[34px]">
+            <input
+              className="hidden"
+              id="showPassword"
+              type="checkbox"
+              value={String(showPassword)}
+              onChange={() => setShowPassword((prev) => !prev)}
+            />
+            <label
+              htmlFor="showPassword"
+              className="cursor-pointer text-gray-400"
+            >
+              <span className="sr-only">Toggle show password</span>
+              {showPassword ? <PasswordVisibleIcon /> : <PasswordHiddenIcon />}
+            </label>
+          </div>
+        </div>
         <Button
           label="Log in"
           type="submit"
