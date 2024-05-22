@@ -124,7 +124,7 @@ export default function CustomerForm({ type, defaultValues }: Props) {
           </div>
         </form>
       </div>
-      <DevTool control={control} />
+      {import.meta.env.DEV && <DevTool control={control} />}
     </div>
   );
 }
