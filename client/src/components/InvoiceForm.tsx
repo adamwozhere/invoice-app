@@ -143,7 +143,7 @@ export default function InvoiceForm({ type, defaultValues }: Props) {
         toast.success('Customer added');
         console.log('created customer with id:', customer.id);
         setTimeout(() => methods.setValue('customer', customer.id), 0);
-        // setNewCustomer(customer.id);
+        void methods.trigger('customer');
       },
       onError: (err) => {
         toast.error('Could not create customer - try again');
