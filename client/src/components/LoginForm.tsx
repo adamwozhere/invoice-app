@@ -56,13 +56,13 @@ export default function LoginForm() {
           void handleSubmit(onSubmit)(event);
         }}
       >
-        <div className="flex gap-2 items-center bg-blue-200 text-blue-500  px-6 py-4 text-sm mb-4 rounded-md border border-blue-300">
+        {/* demo login details */}
+        {/* <div className="flex gap-2 items-center bg-blue-200 text-blue-500  px-6 py-4 text-sm mb-4 rounded-md border border-blue-300">
           <div className="self-start">
             <ExclamationIcon />
           </div>
 
-          {/* demo login details */}
-          {/* <details>
+           <details>
             <summary className="cursor-pointer hover:underline font-bold">
               Just want to try the demo?
             </summary>
@@ -71,9 +71,10 @@ export default function LoginForm() {
               <br />
               Password: <span className="font-bold">Demo1234</span>
             </div>
-          </details> */}
-          {/* end demo login details */}
-        </div>
+          </details> 
+        </div> */}
+        {/* end demo login details */}
+
         {errors.root && (
           <div
             role="alert"
