@@ -7,6 +7,9 @@ View online here: [https://mint-invoicing.onrender.com](https://mint-invoicing.o
 ![Invoices page](screenshot-2.png)
 ![Home page](screenshot-1.png)
 
+## Video walkthrough
+https://github.com/adamwozhere/invoice-app/assets/96954293/3a07dcfd-e8f1-4477-afc2-cfa57cb0c453
+
 ## Features
 
 - User signup
