@@ -4,10 +4,8 @@ A full-stack invoicing app that allows users to create customer and invoice reco
 
 View online here: [https://mint-invoicing.onrender.com](https://mint-invoicing.onrender.com)
 
-![Invoices page](screenshot-2.png)
-![Home page](screenshot-1.png)
-
 ## Video walkthrough
+
 https://github.com/adamwozhere/invoice-app/assets/96954293/3a07dcfd-e8f1-4477-afc2-cfa57cb0c453
 
 ## Features
@@ -21,7 +19,7 @@ https://github.com/adamwozhere/invoice-app/assets/96954293/3a07dcfd-e8f1-4477-af
 - Mark pending invoices as paid
 - Automatic calculation of due date, and item and invoice totals
 
-## About
+## Project structure
 
 ### Frontend (`/client`)
 
@@ -66,3 +64,7 @@ https://github.com/adamwozhere/invoice-app/assets/96954293/3a07dcfd-e8f1-4477-af
 - Run `npm run dev` in two separate terminals for both `/client` and `/server`
 - See the client console to open the VITE server, (default: `localhost:5173`)
 
+## Deployment
+
+- Run `npm run build` for both `/client` and `/server` and deploy to web service provider as separate services
+- Add path origins to `/server/src/config CORS_OPTIONS.origin` for the frontend address
